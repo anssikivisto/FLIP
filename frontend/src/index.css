@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --ket-canvas: #FAF8F0;
+    --ket-ink: #1E293B;
+    --ket-ink-soft: #475569;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    margin: 0;
+    background-color: var(--ket-canvas);
+    color: var(--ket-ink);
+    font-family: 'Nunito', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+}
+
+.font-fredoka {
+    font-family: 'Fredoka', system-ui, sans-serif;
+}
+
+/* Playful decorative dotted canvas */
+.ket-canvas {
+    background-color: var(--ket-canvas);
+    background-image: radial-gradient(#f2e9d0 1.4px, transparent 1.4px);
+    background-size: 26px 26px;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* Tactile 3D button base */
+.ket-btn {
+    border-width: 4px;
+    border-bottom-width: 8px;
+    border-radius: 1.25rem;
+    user-select: none;
+    transition: transform 0.08s ease, border-bottom-width 0.08s ease,
+        background-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+}
+
+.ket-btn:active {
+    transform: translateY(4px);
+    border-bottom-width: 4px;
+}
+
+.ket-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+@keyframes ket-bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.ket-bounce-slow { animation: ket-bounce-slow 2.4s ease-in-out infinite; }
+
+@keyframes ket-pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); }
+}
+.ket-pop { animation: ket-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@keyframes ket-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-6deg); }
+    75% { transform: rotate(6deg); }
+}
+.ket-wiggle { animation: ket-wiggle 0.4s ease-in-out; }
+
+@keyframes ket-float-up {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-90px) scale(1.6); opacity: 0; }
+}
+.ket-float-up { animation: ket-float-up 0.9s ease-out forwards; }
+
+@keyframes ket-fade-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.ket-fade-in { animation: ket-fade-in 0.4s ease-out both; }
+
+@keyframes ket-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+}
+.ket-shake { animation: ket-shake 0.4s ease-in-out; }
+
+.ket-stagger > * { animation: ket-fade-in 0.4s ease-out both; }
+.ket-stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.ket-stagger > *:nth-child(2) { animation-delay: 0.09s; }
+.ket-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.ket-stagger > *:nth-child(4) { animation-delay: 0.21s; }
+.ket-stagger > *:nth-child(5) { animation-delay: 0.27s; }
+.ket-stagger > *:nth-child(6) { animation-delay: 0.33s; }

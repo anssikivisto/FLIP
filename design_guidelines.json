@@ -1,0 +1,268 @@
+{
+  "project_name": "Kid English Trainer (Finnish to English)",
+  "app_type": "mobile_web_app",
+  "target_audience": "7-8 year old Finnish kids (early readers, touch-first tablet/desktop users) + parents & teachers",
+  "design_archetype": "ARCHETYPE 6: VIBRANT PLAY & SOFT TACTILE TOY",
+  "theme": "Light mode default with warm sunny cream canvas (#FAF8F0), 3D tactile pill buttons, vibrant friendly color accents, rounded-3xl container edges, and animated Emoji illustrations.",
+  "typography": {
+    "heading_font": "Fredoka, Nunito, system-ui, sans-serif",
+    "body_font": "Nunito, Fredoka, system-ui, sans-serif",
+    "weights": {
+      "light": "400",
+      "bold": "700",
+      "extra_bold": "800",
+      "black": "900"
+    },
+    "hierarchy": {
+      "app_title": "text-3xl sm:text-4xl lg:text-5xl font-black tracking-wide",
+      "section_heading": "text-2xl sm:text-3xl font-extrabold tracking-normal",
+      "card_title": "text-xl sm:text-2xl font-bold",
+      "body_instructions": "text-base sm:text-lg font-bold leading-relaxed",
+      "badges_labels": "text-xs sm:text-sm font-extrabold uppercase tracking-wider"
+    }
+  },
+  "colors": {
+    "canvas_background": "#FAF8F0",
+    "card_background": "#FFFFFF",
+    "card_border": "#E2E8F0",
+    "text_primary": "#1E293B",
+    "text_secondary": "#475569",
+    "primary_cta_blue": {
+      "fill": "#38BDF8",
+      "border_3d": "#0284C7",
+      "hover": "#0EA5E9",
+      "text": "#FFFFFF"
+    },
+    "secondary_yellow": {
+      "fill": "#FACC15",
+      "border_3d": "#D97706",
+      "hover": "#EAB308",
+      "text": "#78350F"
+    },
+    "success_mint": {
+      "fill": "#4ADE80",
+      "border_3d": "#15803D",
+      "light_bg": "#DCFCE7",
+      "text": "#065F46"
+    },
+    "error_coral": {
+      "fill": "#FB7185",
+      "border_3d": "#BE123C",
+      "light_bg": "#FFE4E6",
+      "text": "#9F1239"
+    },
+    "topic_themes": {
+      "animals": {
+        "bg": "#FEF3C7",
+        "border": "#F59E0B",
+        "accent": "#D97706",
+        "title_fi": "Eläimet",
+        "title_en": "Animals",
+        "emoji": "🦁"
+      },
+      "colors": {
+        "bg": "#F3E8FF",
+        "border": "#A855F7",
+        "accent": "#7E22CE",
+        "title_fi": "Värit",
+        "title_en": "Colors",
+        "emoji": "🎨"
+      },
+      "numbers": {
+        "bg": "#E0F2FE",
+        "border": "#0EA5E9",
+        "accent": "#0369A1",
+        "title_fi": "Numerot",
+        "title_en": "Numbers",
+        "emoji": "🔢"
+      },
+      "foods": {
+        "bg": "#D1FAE5",
+        "border": "#10B981",
+        "accent": "#047857",
+        "title_fi": "Ruoat",
+        "title_en": "Foods",
+        "emoji": "🍕"
+      }
+    }
+  },
+  "visual_enhancers": {
+    "tactile_buttons": "border-4 border-b-8 shadow-lg active:translate-y-1 active:border-b-4 transition-all cursor-pointer rounded-2xl select-none",
+    "mascot": {
+      "name": "Koko Pöllö",
+      "emoji": "🦉",
+      "avatar_style": "w-16 h-16 sm:w-20 sm:h-20 bg-amber-100 rounded-full border-4 border-amber-400 flex items-center justify-center text-4xl shadow-md shrink-0 animate-bounce-slow"
+    },
+    "card_style": "bg-white rounded-3xl border-4 border-slate-200 shadow-[0_8px_0_0_rgba(226,232,240,1)] p-5 sm:p-6 transition-transform hover:-translate-y-1",
+    "speech_bubble": "bg-white border-4 border-amber-300 rounded-2xl p-4 shadow-md text-slate-800 font-bold relative after:content-[''] after:absolute after:-left-3 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-amber-300"
+  },
+  "layout_and_grids": {
+    "container": "max-w-5xl mx-auto px-4 py-4 min-h-screen flex flex-col justify-between",
+    "header_nav": "sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-4 border-amber-200 p-3 sm:p-4 rounded-b-3xl mb-6 shadow-sm flex items-center justify-between gap-3",
+    "topic_grid": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6",
+    "task_grid": "grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6",
+    "recognize_options_grid": "grid grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto w-full",
+    "match_columns": "grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mx-auto"
+  },
+  "game_tasks": [
+    {
+      "id": "recognize",
+      "name_fi": "Tunnista",
+      "name_en": "Listen & Tap",
+      "emoji": "🎧",
+      "description_fi": "Kuuntele englanninkielinen sana ja napauta oikeaa kuvaa!",
+      "mechanics": "Web Speech API plays English word audio automatically. 4 emoji card options presented. Kid taps matching card. Instant cheerful chime and star reward."
+    },
+    {
+      "id": "match",
+      "name_fi": "Yhdistä",
+      "name_en": "Match Pairs",
+      "emoji": "🧩",
+      "description_fi": "Yhdistä englanninkielinen sana oikeaan kuvaan!",
+      "mechanics": "4 English word buttons on left, 4 emoji cards on right. Kid taps word then taps matching emoji (or drag & drop). Matched pairs glow green and lock."
+    },
+    {
+      "id": "speak",
+      "name_fi": "Puhu",
+      "name_en": "Speak Out Loud",
+      "emoji": "🎙️",
+      "description_fi": "Katso kuvaa, nauhoita oma äänesi ja kuuntele miltä kuullostat!",
+      "mechanics": "Shows emoji & word. Kid taps Record button (MediaRecorder API), speaks word, taps Stop, then plays back own voice. NO automated score/judgment — purely positive encouragement ('Mahtavaa ääntämistä!')."
+    },
+    {
+      "id": "write",
+      "name_fi": "Kirjoita sana",
+      "name_en": "Type the Word",
+      "emoji": "✍️",
+      "description_fi": "Kirjoita englanninkielinen sana kirjaimittain!",
+      "mechanics": "Shows emoji image. On-screen letter boxes or keyboard input. Correct letters immediately glow green in real time. Optional 'Vihje' (Hint) reveals next letter or speaks word. Plays full audio when completed."
+    }
+  ],
+  "audio_and_speech": {
+    "text_to_speech": "Browser window.speechSynthesis API with en-US/en-GB utterance at rate 0.85.",
+    "sound_effects": "Web Audio API synth tones for correct answer (C5->E5->G5), try again boing, star gain fanfare.",
+    "voice_recorder": "Web MediaRecorder API with audio stream playback for Speak task.",
+    "mute_toggle": "Persistent header button (🔊 Sound On / 🔇 Muted) saving state in localStorage."
+  },
+  "content_vocabulary": {
+    "animals_count": 25,
+    "animals_sample": [
+      {"en": "dog", "fi": "koira", "emoji": "🐶"},
+      {"en": "cat", "fi": "kissa", "emoji": "🐱"},
+      {"en": "bear", "fi": "karhu", "emoji": "🐻"},
+      {"en": "lion", "fi": "leijona", "emoji": "🦁"},
+      {"en": "rabbit", "fi": "pupu", "emoji": "🐰"},
+      {"en": "fox", "fi": "kettu", "emoji": "🦊"},
+      {"en": "elephant", "fi": "norsu", "emoji": "🐘"},
+      {"en": "monkey", "fi": "apina", "emoji": "🐒"},
+      {"en": "bird", "fi": "lintu", "emoji": "🐦"},
+      {"en": "duck", "fi": "sorsa", "emoji": "🦆"},
+      {"en": "horse", "fi": "hevonen", "emoji": "🐴"},
+      {"en": "pig", "fi": "possu", "emoji": "🐷"},
+      {"en": "frog", "fi": "sammakko", "emoji": "🐸"},
+      {"en": "fish", "fi": "kala", "emoji": "🐟"},
+      {"en": "owl", "fi": "pöllö", "emoji": "🦉"},
+      {"en": "wolf", "fi": "susi", "emoji": "🐺"},
+      {"en": "mouse", "fi": "hiiri", "emoji": "🐭"},
+      {"en": "turtle", "fi": "kilpikonna", "emoji": "🐢"},
+      {"en": "bee", "fi": "mehiläinen", "emoji": "🐝"},
+      {"en": "butterfly", "fi": "perhonen", "emoji": "🦋"},
+      {"en": "penguin", "fi": "pingviini", "emoji": "🐧"},
+      {"en": "dolphin", "fi": "delfiini", "emoji": "🐬"},
+      {"en": "giraffe", "fi": "kirahvi", "emoji": "🦒"},
+      {"en": "koala", "fi": "koala", "emoji": "🐨"},
+      {"en": "tiger", "fi": "tiikeri", "emoji": "🐯"}
+    ],
+    "foods_count": 25,
+    "foods_sample": [
+      {"en": "apple", "fi": "omena", "emoji": "🍎"},
+      {"en": "banana", "fi": "banaani", "emoji": "🍌"},
+      {"en": "pizza", "fi": "pitsa", "emoji": "🍕"},
+      {"en": "milk", "fi": "maito", "emoji": "🥛"},
+      {"en": "bread", "fi": "leipä", "emoji": "🍞"},
+      {"en": "cheese", "fi": "juusto", "emoji": "🧀"},
+      {"en": "ice cream", "fi": "jäätelö", "emoji": "🍦"},
+      {"en": "strawberry", "fi": "mansikka", "emoji": "🍓"},
+      {"en": "carrot", "fi": "porkkana", "emoji": "🥕"},
+      {"en": "cake", "fi": "kakku", "emoji": "🎂"},
+      {"en": "cookie", "fi": "pikkuleipä", "emoji": "🍪"},
+      {"en": "water", "fi": "vesi", "emoji": "💧"},
+      {"en": "orange", "fi": "appelsiini", "emoji": "🍊"},
+      {"en": "watermelon", "fi": "vesimeloni", "emoji": "🍉"},
+      {"en": "egg", "fi": "muna", "emoji": "🥚"},
+      {"en": "chicken", "fi": "kana", "emoji": "🍗"},
+      {"en": "hamburger", "fi": "hampurilainen", "emoji": "🍔"},
+      {"en": "french fries", "fi": "ranskalaiset", "emoji": "🍟"},
+      {"en": "donut", "fi": "donitsi", "emoji": "🍩"},
+      {"en": "candy", "fi": "karkki", "emoji": "🍬"},
+      {"en": "pineapple", "fi": "ananas", "emoji": "🍍"},
+      {"en": "grapes", "fi": "viinirypäleet", "emoji": "🍇"},
+      {"en": "corn", "fi": "maissi", "emoji": "🌽"},
+      {"en": "pancake", "fi": "ohukainen", "emoji": "🥞"},
+      {"en": "honey", "fi": "hunaja", "emoji": "🍯"}
+    ],
+    "colors_list": [
+      {"en": "red", "fi": "punainen", "hex": "#EF4444", "emoji": "🔴"},
+      {"en": "blue", "fi": "sininen", "hex": "#3B82F6", "emoji": "🔵"},
+      {"en": "yellow", "fi": "keltainen", "hex": "#FACC15", "emoji": "🟡"},
+      {"en": "green", "fi": "vihreä", "hex": "#22C55E", "emoji": "🟢"},
+      {"en": "orange", "fi": "oranssi", "hex": "#F97316", "emoji": "🟠"},
+      {"en": "purple", "fi": "violetti", "hex": "#A855F7", "emoji": "🟣"},
+      {"en": "pink", "fi": "vaaleanpunainen", "hex": "#EC4899", "emoji": "🌸"},
+      {"en": "black", "fi": "musta", "hex": "#18181B", "emoji": "🖤"},
+      {"en": "white", "fi": "valkoinen", "hex": "#F4F4F5", "emoji": "🤍"},
+      {"en": "brown", "fi": "ruskea", "hex": "#854D0E", "emoji": "🤎"}
+    ],
+    "numbers_levels": [
+      {"id": "1-10", "label": "1 - 10", "count": 10},
+      {"id": "11-20", "label": "11 - 20", "count": 10},
+      {"id": "21-100", "label": "21 - 100", "count": 80}
+    ]
+  },
+  "testing_testids": {
+    "nav_back": "back-button",
+    "nav_forward": "next-word-button",
+    "sound_toggle": "mute-toggle",
+    "topics": {
+      "animals": "topic-animals",
+      "colors": "topic-colors",
+      "numbers": "topic-numbers",
+      "foods": "topic-foods"
+    },
+    "number_levels": {
+      "level_1_10": "number-level-1-10",
+      "level_11_20": "number-level-11-20",
+      "level_21_100": "number-level-21-100"
+    },
+    "tasks": {
+      "recognize": "task-recognize",
+      "match": "task-match",
+      "speak": "task-speak",
+      "write": "task-write"
+    },
+    "interactive": {
+      "record_voice": "record-button",
+      "play_voice": "play-recording-button",
+      "speech_audio": "audio-listen-button",
+      "hint": "hint-button",
+      "write_input": "letter-input",
+      "star_counter": "star-rewards-counter",
+      "streak_counter": "streak-counter",
+      "reset_progress": "reset-progress-button"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Build the responsive React app inside /app/frontend/src/App.js (or modular subcomponents under /app/frontend/src/components/).",
+    "Use Tailwind CSS classes with heavy 3D tactile buttons (`border-4 border-b-8 active:border-b-4 rounded-2xl`).",
+    "Ensure fixed sticky header with large back button (`data-testid=\"back-button\"`) and next button (`data-testid=\"next-word-button\"`).",
+    "Include speech synthesis audio playback for English words and MediaRecorder audio recording for the Speak task.",
+    "Support localStorage progress tracking for total stars earned, completed topics, practice streaks, and volume mute setting.",
+    "Add all data-testid attributes accurately for automated testing compatibility."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do NOT use dark gradients or harsh monochrome tones. Stick to child-friendly warm canvas (#FAF8F0) and bright tactile cards.",
+    "All interactive elements MUST have explicit data-testid attributes.",
+    "Do NOT ask any clarifying questions — build the fully featured application directly.",
+    "Provide clear Finnish prompt texts and instructions paired with English target words."
+  ]
+}
