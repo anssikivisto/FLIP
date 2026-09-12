@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { STAR_STICKERS, MASTERY_STICKERS, MASTERY_TIMES } from "../lib/stickers";
-import { Lock } from "lucide-react";
+import { Lock, X } from "lucide-react";
 
-function StickerCell({ sticker, unlocked, hint }) {
+function StickerCell({ sticker, unlocked, hint, onClick }) {
   return (
-    <div
+    <button
       data-testid={`sticker-${sticker.id}`}
-      className={`relative flex flex-col items-center justify-center gap-1 p-3 rounded-2xl border-4 aspect-square transition-transform ${
-        unlocked ? "bg-white ket-pop hover:-translate-y-1" : "bg-slate-50"
+      onClick={() => onClick({ sticker, unlocked, hint })}
+      className={`relative flex flex-col items-center justify-center gap-1 p-3 rounded-2xl border-4 aspect-square transition-transform hover:-translate-y-1 ${
+        unlocked ? "bg-white ket-pop" : "bg-slate-50"
       }`}
       style={{ borderColor: unlocked ? "#FBBF24" : "#E2E8F0" }}
     >
@@ -29,11 +30,54 @@ function StickerCell({ sticker, unlocked, hint }) {
           <Lock className="w-3 h-3" /> {hint}
         </span>
       )}
+    </button>
+  );
+}
+
+function StickerDetail({ data, onClose }) {
+  if (!data) return null;
+  const { sticker, unlocked, hint } = data;
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+      data-testid="sticker-detail-modal"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="ket-pop bg-white rounded-3xl border-4 shadow-2xl w-full max-w-sm p-8 flex flex-col items-center gap-4 text-center"
+        style={{ borderColor: unlocked ? "#FBBF24" : "#CBD5E1" }}
+      >
+        <button
+          data-testid="sticker-detail-close"
+          onClick={onClose}
+          className="ket-btn self-end p-2 bg-white -mt-2 -mr-2"
+          style={{ borderColor: "#CBD5E1" }}
+          aria-label="Sulje"
+        >
+          <X className="w-6 h-6 text-slate-500" strokeWidth={3} />
+        </button>
+        <span
+          className="text-[7rem] sm:text-[9rem] leading-none ket-bounce-slow"
+          style={{ filter: unlocked ? "none" : "grayscale(1)", opacity: unlocked ? 1 : 0.4 }}
+        >
+          {sticker.emoji}
+        </span>
+        <span className="font-fredoka font-bold text-3xl text-slate-700">{sticker.name_fi}</span>
+        {unlocked ? (
+          <span className="font-fredoka font-bold text-xl text-green-600">Ansaittu! 🎉</span>
+        ) : (
+          <span className="flex items-center gap-2 font-fredoka font-bold text-lg text-slate-400">
+            <Lock className="w-5 h-5" /> {hint}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
 export function StickerAlbum({ progress }) {
+  const [detail, setDetail] = useState(null);
   const unlocked = progress.unlocked || [];
   const completed = progress.completed || {};
   const roundCount = (topicId) =>
@@ -59,6 +103,7 @@ export function StickerAlbum({ progress }) {
               sticker={s}
               unlocked={unlocked.includes(s.id)}
               hint={`${s.cost} ⭐`}
+              onClick={setDetail}
             />
           ))}
         </div>
@@ -73,10 +118,13 @@ export function StickerAlbum({ progress }) {
               sticker={m}
               unlocked={unlocked.includes(m.id)}
               hint={`${roundCount(m.topic)}/${MASTERY_TIMES} ${m.topic_fi}`}
+              onClick={setDetail}
             />
           ))}
         </div>
       </div>
+
+      <StickerDetail data={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

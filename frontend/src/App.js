@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { loadContent, getPool } from "./lib/content";
 import { getProgress, addStars, completeRound, resetProgress, addUnlocked } from "./lib/storage";
-import { isMuted, setMuted } from "./lib/audio";
 import { playStar } from "./lib/audio";
 import { earnedStickerIds, getStickerById } from "./lib/stickers";
 import { StickerAlbum, StickerUnlockPopup } from "./components/Stickers";
@@ -28,7 +27,6 @@ export default function App() {
   const [gameKey, setGameKey] = useState(0);
 
   const [progress, setProgress] = useState(getProgress());
-  const [muted, setMutedState] = useState(isMuted());
   const [roundStars, setRoundStars] = useState(0);
   const [celebrate, setCelebrate] = useState([]); // queue of newly unlocked sticker ids
   const [showSettings, setShowSettings] = useState(false);
@@ -48,12 +46,6 @@ export default function App() {
       playStar();
     }
   }, []);
-
-  const toggleMute = () => {
-    const next = !muted;
-    setMuted(next);
-    setMutedState(next);
-  };
 
   const onStar = useCallback(() => {
     const np = addStars(1);
@@ -156,8 +148,6 @@ export default function App() {
         onBack={handleBack}
         canBack={canBack}
         stars={progress.stars}
-        muted={muted}
-        onToggleMute={toggleMute}
         onOpenSettings={() => setShowSettings(true)}
       />
 

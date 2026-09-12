@@ -4,16 +4,16 @@
 export const MASTERY_TIMES = 3;
 
 export const STAR_STICKERS = [
-  { id: "star", emoji: "🌟", name_fi: "Tähti", cost: 5 },
-  { id: "rainbow", emoji: "🌈", name_fi: "Sateenkaari", cost: 10 },
-  { id: "lollipop", emoji: "🍭", name_fi: "Tikkari", cost: 20 },
-  { id: "rocket", emoji: "🚀", name_fi: "Raketti", cost: 35 },
-  { id: "unicorn", emoji: "🦄", name_fi: "Yksisarvinen", cost: 50 },
-  { id: "crown", emoji: "👑", name_fi: "Kruunu", cost: 75 },
-  { id: "dragon", emoji: "🐉", name_fi: "Lohikäärme", cost: 100 },
-  { id: "trophy", emoji: "🏆", name_fi: "Pokaali", cost: 150 },
-  { id: "diamond", emoji: "💎", name_fi: "Timantti", cost: 200 },
-  { id: "world", emoji: "🌍", name_fi: "Maailma", cost: 300 },
+  { id: "star", emoji: "🌟", name_fi: "Tähti", cost: 15 },
+  { id: "rainbow", emoji: "🌈", name_fi: "Sateenkaari", cost: 40 },
+  { id: "lollipop", emoji: "🍭", name_fi: "Tikkari", cost: 75 },
+  { id: "rocket", emoji: "🚀", name_fi: "Raketti", cost: 120 },
+  { id: "unicorn", emoji: "🦄", name_fi: "Yksisarvinen", cost: 175 },
+  { id: "crown", emoji: "👑", name_fi: "Kruunu", cost: 240 },
+  { id: "dragon", emoji: "🐉", name_fi: "Lohikäärme", cost: 320 },
+  { id: "trophy", emoji: "🏆", name_fi: "Pokaali", cost: 420 },
+  { id: "diamond", emoji: "💎", name_fi: "Timantti", cost: 550 },
+  { id: "world", emoji: "🌍", name_fi: "Maailma", cost: 700 },
 ];
 
 export const MASTERY_STICKERS = [

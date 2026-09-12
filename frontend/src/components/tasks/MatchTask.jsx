@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { ItemImage } from "../ItemImage";
 import { Mascot } from "../Chrome";
 import { shuffle } from "../../lib/content";
@@ -6,6 +6,7 @@ import { speak, playCorrect, playTryAgain, playStar } from "../../lib/audio";
 import { CheckCircle2 } from "lucide-react";
 
 const BATCH = 4;
+const DRAG_THRESHOLD = 6; // px before a press becomes a drag
 
 function buildBatches(pool) {
   const picked = shuffle(pool);
@@ -29,6 +30,10 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
   const [selectedWord, setSelectedWord] = useState(null);
   const [matched, setMatched] = useState({});
   const [wrongImg, setWrongImg] = useState(null);
+  const [drag, setDrag] = useState(null); // { word, x, y, moved }
+  const [hoverImg, setHoverImg] = useState(null);
+  const startRef = useRef({ x: 0, y: 0 });
+  const matchedRef = useRef({});
 
   const current = batches[bi];
   const allMatched = current.every((it) => matched[it.en]);
@@ -43,13 +48,15 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
       setImages(shuffle(batches[next]));
       setSelectedWord(null);
       setMatched({});
+      matchedRef.current = {};
     }
   };
 
   const tryMatch = (wordEn, imgEn) => {
-    if (matched[imgEn]) return;
+    if (matchedRef.current[imgEn]) return;
     if (wordEn === imgEn) {
-      const m = { ...matched, [imgEn]: true };
+      const m = { ...matchedRef.current, [imgEn]: true };
+      matchedRef.current = m;
       setMatched(m);
       setSelectedWord(null);
       speak(imgEn);
@@ -66,13 +73,52 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
     }
   };
 
-  const onImageActivate = (img) => {
+  const dropTargetAt = (x, y) => {
+    const el = document.elementFromPoint(x, y);
+    const drop = el && el.closest("[data-drop-en]");
+    return drop ? drop.getAttribute("data-drop-en") : null;
+  };
+
+  const onPointerDown = (e, w) => {
+    if (matched[w.en]) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (err) {}
+    startRef.current = { x: e.clientX, y: e.clientY };
+    setDrag({ word: w, x: e.clientX, y: e.clientY, moved: false });
+  };
+
+  const onPointerMove = (e) => {
+    if (!drag) return;
+    const dx = e.clientX - startRef.current.x;
+    const dy = e.clientY - startRef.current.y;
+    const moved = drag.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
+    setDrag({ ...drag, x: e.clientX, y: e.clientY, moved });
+    if (moved) setHoverImg(dropTargetAt(e.clientX, e.clientY));
+  };
+
+  const onPointerUp = (e, w) => {
+    const d = drag;
+    setDrag(null);
+    setHoverImg(null);
+    if (!d) return;
+    if (d.moved) {
+      const imgEn = dropTargetAt(e.clientX, e.clientY);
+      if (imgEn) tryMatch(w.en, imgEn);
+    } else {
+      // treat as tap select/deselect
+      setSelectedWord((prev) => (prev === w.en ? null : w.en));
+    }
+  };
+
+  const onImageTap = (img) => {
+    if (matched[img.en]) return;
     if (selectedWord) tryMatch(selectedWord, img.en);
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full ket-fade-in">
-      <Mascot message="Napauta sana, sitten oikea kuva — tai raahaa!" small />
+    <div className="flex flex-col items-center gap-6 w-full ket-fade-in select-none">
+      <Mascot message="Raahaa sana oikean kuvan päälle — tai napauta sana ja sitten kuva!" small />
       <p className="font-fredoka text-slate-400 font-semibold">
         Osa {bi + 1} / {batches.length}
       </p>
@@ -83,21 +129,23 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
           {words.map((w) => {
             const done = matched[w.en];
             const active = selectedWord === w.en;
+            const isDragging = drag && drag.moved && drag.word.en === w.en;
             return (
               <button
                 key={w.en}
                 data-testid={`match-word-${w.en.replace(/\s+/g, "-")}`}
-                draggable={!done}
-                onDragStart={(e) => e.dataTransfer.setData("text/plain", w.en)}
-                onClick={() => !done && setSelectedWord(active ? null : w.en)}
+                onPointerDown={(e) => onPointerDown(e, w)}
+                onPointerMove={onPointerMove}
+                onPointerUp={(e) => onPointerUp(e, w)}
                 disabled={done}
-                className={`ket-btn px-4 py-4 font-fredoka font-bold text-xl sm:text-2xl text-center ${
+                className={`ket-btn px-4 py-4 font-fredoka font-bold text-xl sm:text-2xl text-center touch-none ${
                   done ? "opacity-40" : ""
                 }`}
                 style={{
                   backgroundColor: active ? topic.theme.accent : "#fff",
                   color: active ? "#fff" : "#1E293B",
                   borderColor: topic.theme.border,
+                  opacity: isDragging ? 0.35 : done ? 0.4 : 1,
                 }}
               >
                 {w.en}
@@ -111,22 +159,20 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
           {images.map((img) => {
             const done = matched[img.en];
             const isWrong = wrongImg === img.en;
+            const isHover = hoverImg === img.en && !done;
             return (
-              <button
+              <div
                 key={img.en}
+                data-drop-en={img.en}
                 data-testid={`match-image-${img.en.replace(/\s+/g, "-")}`}
-                onClick={() => onImageActivate(img)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  tryMatch(e.dataTransfer.getData("text/plain"), img.en);
-                }}
-                className={`ket-btn bg-white flex items-center justify-center h-20 sm:h-24 ${
+                onClick={() => onImageTap(img)}
+                className={`ket-btn bg-white flex items-center justify-center h-20 sm:h-24 cursor-pointer ${
                   isWrong ? "ket-shake" : ""
                 } ${done ? "ket-pop" : ""}`}
                 style={{
-                  borderColor: done ? "#15803D" : topic.theme.border,
-                  backgroundColor: done ? "#DCFCE7" : "#fff",
+                  borderColor: done ? "#15803D" : isHover ? topic.theme.accent : topic.theme.border,
+                  backgroundColor: done ? "#DCFCE7" : isHover ? topic.theme.bg : "#fff",
+                  transform: isHover ? "scale(1.05)" : "none",
                 }}
               >
                 {done ? (
@@ -134,11 +180,29 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
                 ) : (
                   <ItemImage item={img} kind={topic.kind} size="text-4xl sm:text-5xl" />
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
       </div>
+
+      {/* Floating dragged tile — centered on the pointer */}
+      {drag && drag.moved && (
+        <div
+          className="fixed font-fredoka font-bold text-xl sm:text-2xl px-5 py-4 rounded-2xl border-4 shadow-2xl text-white ket-pop"
+          style={{
+            left: drag.x,
+            top: drag.y,
+            transform: "translate(-50%, -50%) rotate(-3deg)",
+            backgroundColor: topic.theme.accent,
+            borderColor: topic.theme.border,
+            pointerEvents: "none",
+            zIndex: 60,
+          }}
+        >
+          {drag.word.en}
+        </div>
+      )}
 
       {allMatched && (
         <div className="font-fredoka font-bold text-2xl text-green-600 ket-pop">Loistavaa! 🎉</div>

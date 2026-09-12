@@ -32,6 +32,7 @@ Pelillistetty sanastopeli suomenkielisille 7–8-vuotiaille (Finnish → English
 - Full e2e tested: backend 10/10 pytest, frontend all flows pass.
 - Reward stickers (2026-06-12): 10 star-threshold stickers (5→300 ⭐, cumulative, never spent) + 7 topic-mastery stickers (finish a topic 3×). Album screen from menu (🏅 Tarrat) + unlock celebration popup. All localStorage, tested 100%.
 - Voice settings (2026-06-12): header gear opens Ääniasetukset modal — British/American accent toggle + speech-rate slider (0.5–1.3×). Persists to localStorage 'ket_voice_v1' and applies to all SpeechSynthesis playback. Tested 100%.
+- Iteration (2026-06-12): raised sticker star thresholds (15/40/75/120/175/240/320/420/550/700); removed mute button (settings gear only in header); FIXED Match drag-and-drop via Pointer Events (floating tile follows finger/cursor, centered on grab point) with tap fallback; sticker cells open an enlarged detail modal. Tested 100%.
 
 ## Backlog / Future (not now)
 - P2: More topics (Perhe, Keho, Sää, Vaatteet).

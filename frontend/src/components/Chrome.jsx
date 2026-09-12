@@ -1,7 +1,7 @@
 import React from "react";
-import { ArrowLeft, Volume2, VolumeX, Star, Settings } from "lucide-react";
+import { ArrowLeft, Star, Settings } from "lucide-react";
 
-export function Header({ title, accent, onBack, canBack, stars, muted, onToggleMute, onOpenSettings }) {
+export function Header({ title, accent, onBack, canBack, stars, onOpenSettings }) {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-4 border-amber-200 rounded-b-3xl shadow-sm">
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-3">
@@ -36,19 +36,6 @@ export function Header({ title, accent, onBack, canBack, stars, muted, onToggleM
             <Star className="w-5 h-5 fill-amber-400 text-amber-500" />
             {stars}
           </div>
-          <button
-            data-testid="mute-toggle"
-            onClick={onToggleMute}
-            className="ket-btn p-2.5 bg-white"
-            style={{ borderColor: "#FBBF24" }}
-            aria-label={muted ? "Ääni pois" : "Ääni päällä"}
-          >
-            {muted ? (
-              <VolumeX className="w-6 h-6 text-slate-400" strokeWidth={2.5} />
-            ) : (
-              <Volume2 className="w-6 h-6 text-amber-500" strokeWidth={2.5} />
-            )}
-          </button>
           <button
             data-testid="open-settings-button"
             onClick={onOpenSettings}
