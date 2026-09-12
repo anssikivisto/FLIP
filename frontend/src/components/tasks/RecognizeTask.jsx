@@ -39,19 +39,20 @@ export function RecognizeTask({ topic, pool, onStar, onFinish }) {
       playCorrect();
       playStar();
       onStar();
-      setTimeout(() => {
-        if (idx + 1 >= questions.length) {
-          onFinish();
-        } else {
-          setIdx(idx + 1);
-          setCorrect(false);
-          setWrong(null);
-        }
-      }, 950);
     } else {
       setWrong(opt.en);
       playTryAgain();
       setTimeout(() => setWrong(null), 500);
+    }
+  };
+
+  const advance = () => {
+    if (idx + 1 >= questions.length) {
+      onFinish();
+    } else {
+      setIdx(idx + 1);
+      setCorrect(false);
+      setWrong(null);
     }
   };
 
@@ -95,13 +96,24 @@ export function RecognizeTask({ topic, pool, onStar, onFinish }) {
       </div>
 
       {correct && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none px-6">
-          <div className="ket-pop bg-white/95 backdrop-blur rounded-3xl border-4 border-green-400 shadow-2xl px-10 sm:px-14 py-8 sm:py-10 flex flex-col items-center gap-3">
+        <div
+          onClick={advance}
+          className="fixed inset-0 z-40 flex items-center justify-center px-6 bg-black/10 cursor-pointer"
+          data-testid="recognize-correct-overlay"
+        >
+          <div className="ket-pop bg-white rounded-3xl border-4 border-green-400 shadow-2xl px-10 sm:px-14 py-8 sm:py-10 flex flex-col items-center gap-4">
             <ItemImage item={q.target} kind={topic.kind} size="text-8xl sm:text-9xl" />
             <span className="font-fredoka font-bold text-5xl sm:text-6xl text-green-600">
               {q.target.en}
             </span>
             <span className="font-fredoka font-bold text-2xl text-amber-500">Hienoa! ⭐</span>
+            <NextArrow
+              onClick={(e) => {
+                e.stopPropagation();
+                advance();
+              }}
+              label={idx + 1 >= questions.length ? "Valmis" : "Seuraava"}
+            />
           </div>
         </div>
       )}
