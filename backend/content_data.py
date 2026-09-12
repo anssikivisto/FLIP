@@ -105,7 +105,7 @@ CLOTHES = [
     {"en": "shoe", "fi": "kenkä", "emoji": "👟"},
     {"en": "boot", "fi": "saapas", "emoji": "👢"},
     {"en": "high heels", "fi": "korkokengät", "emoji": "👠"},
-    {"en": "sock", "fi": "sukka", "emoji": "🧦"},
+    {"en": "socks", "fi": "sukat", "emoji": "🧦"},
     {"en": "hat", "fi": "hattu", "emoji": "👒"},
     {"en": "cap", "fi": "lippalakki", "emoji": "🧢"},
     {"en": "gloves", "fi": "hanskat", "emoji": "🧤"},
@@ -123,7 +123,7 @@ CLOTHES = [
     {"en": "swimsuit", "fi": "uimapuku", "emoji": "🩱"},
     {"en": "bikini", "fi": "bikinit", "emoji": "👙"},
     {"en": "sandal", "fi": "sandaali", "emoji": "🩴"},
-    {"en": "vest", "fi": "liivi", "emoji": "🎽"},
+    {"en": "top", "fi": "toppi", "emoji": "🎽"},
 ]
 
 NATURE = [
