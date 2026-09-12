@@ -29,7 +29,8 @@ Pelillistetty sanastopeli suomenkielisille 7–8-vuotiaille (Finnish → English
 - localStorage progress + content caching. Warm playful palette, Fredoka/Nunito fonts, tactile 3D buttons, staggered animations.
 - Topics (7): Eläimet 25, Värit 10, Numerot (1-10/11-20/21-100), Ruoat 25, Keho 25, Vaatteet 25, Luonto 25.
 - Header title "English Trainer".
-- Full e2e tested twice: backend 10/10 pytest, frontend all flows pass.
+- Full e2e tested: backend 10/10 pytest, frontend all flows pass.
+- Reward stickers (2026-06-12): 10 star-threshold stickers (5→300 ⭐, cumulative, never spent) + 7 topic-mastery stickers (finish a topic 3×). Album screen from menu (🏅 Tarrat) + unlock celebration popup. All localStorage, tested 100%.
 
 ## Backlog / Future (not now)
 - P2: More topics (Perhe, Keho, Sää, Vaatteet).

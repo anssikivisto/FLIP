@@ -2,7 +2,7 @@
 
 const KEY = "ket_progress_v1";
 
-const DEFAULT = { stars: 0, streak: 0, lastPlayDay: null, completed: {} };
+const DEFAULT = { stars: 0, streak: 0, lastPlayDay: null, completed: {}, unlocked: [] };
 
 export function getProgress() {
   try {
@@ -39,6 +39,14 @@ export function completeRound(topicId, taskId) {
   return save(p);
 }
 
+export function addUnlocked(ids) {
+  const p = getProgress();
+  const set = new Set(p.unlocked || []);
+  ids.forEach((id) => set.add(id));
+  p.unlocked = [...set];
+  return save(p);
+}
+
 export function resetProgress() {
-  return save({ ...DEFAULT });
+  return save({ ...DEFAULT, unlocked: [] });
 }

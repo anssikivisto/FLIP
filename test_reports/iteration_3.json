@@ -1,0 +1,31 @@
+{
+  "summary": "Frontend-only testing of the new reward sticker (palkintotarrat) feature. All acceptance criteria pass: sticker album opens from menu (open-stickers-button), fresh state shows all 17 stickers locked with proper hints (cost in stars / mastery counter), star-threshold stickers unlock as total stars accumulate (star @5, rainbow @10) with a celebration popup (sticker-unlock-popup) — critically, stars are NOT consumed on unlock (header still showed 5 after 'star' unlock, kept incrementing to 7). Mastery sticker (m_animals) correctly unlocked after the 3rd completed round of animals recognize (completed count 2→3 seeded then played 1 round). Reset progress clears both stars and unlocked list, and Tarrat badge returns to 0. Opettele (flashcards) does NOT award stars and does NOT increment completed counts, so it cannot contribute to mastery. Regression checks: 7 topics load, task menu shows opettele first, recognize overlay persists until click.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Sticker unlock popup while RoundComplete is behind it", "issues": ["Purely cosmetic: when a mastery sticker unlocks at end of round, the RoundComplete screen text is partially covered by the popup — expected/acceptable since popup is z-50 and dismissible."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/album_locked.png",
+    "/app/test_reports/unlock_popup.png",
+    "/app/test_reports/mastery_unlock.png"
+  ],
+  "action_items": [
+    "Naming inconsistency (not a bug): review_request example mentions data-testid 'sticker-m-animals' (hyphen), implementation uses 'sticker-m_animals' (underscore) since the sticker id is 'm_animals'. Consumers/tests should use the underscore form. No code change required unless the spec insists on the hyphenated form."
+  ],
+  "critical_code_review_comments": [
+    "syncStickers is only called after onStar/onFinish — if progress is mutated elsewhere in the future, stickers won't auto-sync. Consider a useEffect on progress to re-sync (currently fine).",
+    "StickerAlbum uses progress.unlocked exclusively; if data ever contains stale/legacy state where completed>=3 but unlocked is empty, the album will show it as locked. Currently syncStickers on next action recovers it — acceptable.",
+    "Multiple simultaneous unlocks are queued via celebrate array and shown one-by-one — verified working (star at Q5, rainbow would be at Q10 next round).",
+    "addUnlocked persists to localStorage via getProgress()->save flow; there is a subtle race: setProgress(addUnlocked(fresh)) uses fresh localStorage state, which is fine because progress was just saved by addStars/completeRound in the same tick."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "N/A", "frontend": "100%" },
+  "seed_data_creation": "Tests used localStorage seeding of ket_progress_v1 to shortcut to mastery threshold and to reset state; no backend seeds.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sticker feature fully functional. All required data-testids present: open-stickers-button, sticker-album, sticker-<id> (star, rainbow, lollipop, rocket, unicorn, crown, dragon, trophy, diamond, world, m_animals, m_colors, m_numbers, m_foods, m_body, m_clothes, m_nature), sticker-unlock-popup, sticker-unlock-close, reset-progress-button. Mastery ids use UNDERSCORE (m_animals not m-animals). Recognize task awards 1 star/correct (10/round). Fresh state via localStorage.clear() then reload."
+}

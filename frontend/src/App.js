@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { loadContent, getPool } from "./lib/content";
-import { getProgress, addStars, completeRound, resetProgress } from "./lib/storage";
+import { getProgress, addStars, completeRound, resetProgress, addUnlocked } from "./lib/storage";
 import { isMuted, setMuted } from "./lib/audio";
+import { playStar } from "./lib/audio";
+import { earnedStickerIds, getStickerById } from "./lib/stickers";
+import { StickerAlbum, StickerUnlockPopup } from "./components/Stickers";
 import { Header } from "./components/Chrome";
 import { TopicMenu, NumberLevelSelect, TaskMenu, RoundComplete } from "./components/Screens";
 import { RecognizeTask } from "./components/tasks/RecognizeTask";
@@ -26,9 +29,22 @@ export default function App() {
   const [progress, setProgress] = useState(getProgress());
   const [muted, setMutedState] = useState(isMuted());
   const [roundStars, setRoundStars] = useState(0);
+  const [celebrate, setCelebrate] = useState([]); // queue of newly unlocked sticker ids
 
   useEffect(() => {
     loadContent().then(setTopics).catch(() => setError(true));
+  }, []);
+
+  // Unlock any stickers newly earned by this progress, and queue celebrations.
+  const syncStickers = useCallback((p) => {
+    const earned = earnedStickerIds(p);
+    const current = p.unlocked || [];
+    const fresh = earned.filter((id) => !current.includes(id));
+    if (fresh.length) {
+      setProgress(addUnlocked(fresh));
+      setCelebrate((q) => [...q, ...fresh]);
+      playStar();
+    }
   }, []);
 
   const toggleMute = () => {
@@ -38,9 +54,11 @@ export default function App() {
   };
 
   const onStar = useCallback(() => {
-    setProgress(addStars(1));
+    const np = addStars(1);
+    setProgress(np);
     setRoundStars((s) => s + 1);
-  }, []);
+    syncStickers(np);
+  }, [syncStickers]);
 
   const pickTopic = (t) => {
     setTopic(t);
@@ -66,7 +84,9 @@ export default function App() {
       setScreen("tasks");
       return;
     }
-    setProgress(completeRound(topic.id, task));
+    const np = completeRound(topic.id, task);
+    setProgress(np);
+    syncStickers(np);
     setScreen("complete");
   };
 
@@ -80,6 +100,7 @@ export default function App() {
     if (screen === "game" || screen === "complete") setScreen("tasks");
     else if (screen === "tasks") setScreen(topic && topic.has_levels ? "levels" : "menu");
     else if (screen === "levels") setScreen("menu");
+    else if (screen === "stickers") setScreen("menu");
   };
 
   const doReset = () => {
@@ -91,13 +112,15 @@ export default function App() {
   const headerTitle =
     screen === "menu"
       ? "English Trainer"
+      : screen === "stickers"
+      ? "Tarrat 🏅"
       : screen === "game" || screen === "complete"
       ? `${topic.title_fi} · ${TASK_LABEL[task]}`
       : topic
       ? topic.title_fi
       : "";
 
-  const accent = topic ? topic.theme.accent : "#0369A1";
+  const accent = screen === "stickers" ? "#D97706" : topic ? topic.theme.accent : "#0369A1";
 
   if (error) {
     return (
@@ -137,8 +160,15 @@ export default function App() {
 
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 sm:py-10 flex flex-col items-center">
         {screen === "menu" && (
-          <TopicMenu topics={topics} progress={progress} onPick={pickTopic} onReset={doReset} />
+          <TopicMenu
+            topics={topics}
+            progress={progress}
+            onPick={pickTopic}
+            onReset={doReset}
+            onOpenStickers={() => setScreen("stickers")}
+          />
         )}
+        {screen === "stickers" && <StickerAlbum progress={progress} />}
         {screen === "levels" && topic && <NumberLevelSelect topic={topic} onPick={pickLevel} />}
         {screen === "tasks" && topic && <TaskMenu topic={topic} onPick={pickTask} />}
 
@@ -162,6 +192,11 @@ export default function App() {
           <RoundComplete topic={topic} earned={roundStars} onAgain={playAgain} onMenu={() => setScreen("tasks")} />
         )}
       </main>
+
+      <StickerUnlockPopup
+        sticker={celebrate.length ? getStickerById(celebrate[0]) : null}
+        onClose={() => setCelebrate((q) => q.slice(1))}
+      />
     </div>
   );
 }

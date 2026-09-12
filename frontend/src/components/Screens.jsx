@@ -10,7 +10,7 @@ const TASKS = [
   { id: "write", fi: "Kirjoita sana", emoji: "✍️", desc: "Kirjoita kirjaimet", color: "#4ADE80", border: "#15803D" },
 ];
 
-export function TopicMenu({ topics, progress, onPick, onReset }) {
+export function TopicMenu({ topics, progress, onPick, onReset, onOpenStickers }) {
   return (
     <div className="flex flex-col items-center gap-8 w-full">
       <div className="text-center ket-fade-in">
@@ -39,6 +39,18 @@ export function TopicMenu({ topics, progress, onPick, onReset }) {
           </button>
         ))}
       </div>
+
+      <button
+        data-testid="open-stickers-button"
+        onClick={onOpenStickers}
+        className="ket-btn flex items-center gap-2 px-7 py-4 font-fredoka font-bold text-xl text-white"
+        style={{ backgroundColor: "#FBBF24", borderColor: "#D97706", color: "#78350F" }}
+      >
+        🏅 Tarrat
+        <span className="px-2 py-0.5 rounded-full bg-white/60 text-base">
+          {(progress.unlocked || []).length}
+        </span>
+      </button>
 
       <div className="flex items-center gap-4 flex-wrap justify-center">
         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 border-2 border-amber-300 font-fredoka font-bold text-amber-700">
