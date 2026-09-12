@@ -95,8 +95,14 @@ export function RecognizeTask({ topic, pool, onStar, onFinish }) {
       </div>
 
       {correct && (
-        <div className="font-fredoka font-bold text-2xl text-green-600 ket-pop">
-          Hienoa! ⭐ <span className="text-slate-500 text-xl">({q.target.en})</span>
+        <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none px-6">
+          <div className="ket-pop bg-white/95 backdrop-blur rounded-3xl border-4 border-green-400 shadow-2xl px-10 sm:px-14 py-8 sm:py-10 flex flex-col items-center gap-3">
+            <ItemImage item={q.target} kind={topic.kind} size="text-8xl sm:text-9xl" />
+            <span className="font-fredoka font-bold text-5xl sm:text-6xl text-green-600">
+              {q.target.en}
+            </span>
+            <span className="font-fredoka font-bold text-2xl text-amber-500">Hienoa! ⭐</span>
+          </div>
         </div>
       )}
     </div>

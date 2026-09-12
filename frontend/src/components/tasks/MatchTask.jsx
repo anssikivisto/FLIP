@@ -8,7 +8,7 @@ import { CheckCircle2 } from "lucide-react";
 const BATCH = 4;
 
 function buildBatches(pool) {
-  const picked = shuffle(pool).slice(0, Math.min(8, pool.length));
+  const picked = shuffle(pool);
   const batches = [];
   for (let i = 0; i < picked.length; i += BATCH) {
     batches.push(picked.slice(i, i + BATCH));

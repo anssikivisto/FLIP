@@ -19,7 +19,7 @@ export function TopicMenu({ topics, progress, onPick, onReset }) {
         <p className="text-slate-500 font-bold text-lg mt-2">Valitse aihe ja aloita</p>
       </div>
 
-      <Mascot message="Hei! Olen Koko Pöllö. Valitaan aihe!" />
+      <Mascot message="Hei! Olen Flip. Valitaan aihe!" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full max-w-4xl ket-stagger">
         {topics.map((t) => (

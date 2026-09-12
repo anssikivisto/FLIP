@@ -84,7 +84,7 @@ export default function App() {
 
   const headerTitle =
     screen === "menu"
-      ? "Kid English Trainer"
+      ? "English Trainer"
       : screen === "game" || screen === "complete"
       ? `${topic.title_fi} · ${TASK_LABEL[task]}`
       : topic
@@ -97,7 +97,7 @@ export default function App() {
     return (
       <div className="ket-canvas flex items-center justify-center p-8 text-center">
         <div className="bg-white rounded-3xl border-4 border-amber-300 p-8 max-w-md">
-          <div className="text-5xl mb-3">🦉</div>
+          <div className="text-5xl mb-3">🐸</div>
           <p className="font-fredoka font-bold text-xl text-slate-600">
             Hups! Sisältöä ei saatu ladattua. Tarkista nettiyhteys ja päivitä sivu.
           </p>

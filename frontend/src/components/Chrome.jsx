@@ -59,11 +59,11 @@ export function Mascot({ message, small }) {
   return (
     <div className="flex items-center gap-3 justify-center">
       <div
-        className={`ket-bounce-slow bg-amber-100 rounded-full border-4 border-amber-400 flex items-center justify-center shadow-md shrink-0 ${
+        className={`ket-bounce-slow bg-green-100 rounded-full border-4 border-green-400 flex items-center justify-center shadow-md shrink-0 ${
           small ? "w-12 h-12 text-2xl" : "w-16 h-16 sm:w-20 sm:h-20 text-3xl sm:text-4xl"
         }`}
       >
-        🦉
+        🐸
       </div>
       {message && (
         <div className="bg-white border-4 border-amber-300 rounded-2xl px-4 py-2.5 shadow-md font-bold text-slate-700 text-base sm:text-lg max-w-md">

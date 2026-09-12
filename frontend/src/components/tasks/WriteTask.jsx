@@ -14,6 +14,7 @@ export function WriteTask({ topic, pool, onStar, onFinish }) {
   const [typed, setTyped] = useState("");
   const [done, setDone] = useState(false);
   const [hint, setHint] = useState(false);
+  const [hintCount, setHintCount] = useState(0);
   const inputRef = useRef(null);
   const starredRef = useRef(false);
 
@@ -25,6 +26,7 @@ export function WriteTask({ topic, pool, onStar, onFinish }) {
     setTyped("");
     setDone(false);
     setHint(false);
+    setHintCount(0);
     starredRef.current = false;
     const t = setTimeout(() => inputRef.current && inputRef.current.focus(), 300);
     return () => clearTimeout(t);
@@ -44,9 +46,14 @@ export function WriteTask({ topic, pool, onStar, onFinish }) {
   };
 
   const showHint = () => {
-    setHint(true);
     speak(target);
-    setTimeout(() => setHint(false), 1600);
+    const next = hintCount + 1;
+    setHintCount(next);
+    // 1. painallus: sano vain sana. 2. painallus: näytä sana myös kirjoitettuna.
+    if (next >= 2) {
+      setHint(true);
+      setTimeout(() => setHint(false), 2200);
+    }
   };
 
   const next = () => {
