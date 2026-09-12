@@ -1,0 +1,22 @@
+{
+  "summary": "Frontend-only testing of new Ääniasetukset (voice settings) modal. All 7 review scenarios pass: gear button present in header, modal opens with GB highlighted by default, clicking accent-us persists accent='us' to localStorage 'ket_voice_v1', rate slider updates readout (e.g. '1.10×') and persists rate, test-voice-button click does not crash, close button and backdrop click both close the modal, click inside white modal does not close it, persisted values are shown on reopen. Regression: topic menu still loads and gear remains visible/functional on all screens.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SettingsModal.chooseAccent() calls speak('Hello') on every accent click — may be surprising UX if user is toggling; consider only speaking on the explicit 'Kokeile ääntä' button.",
+    "getVoiceSettings() spreads DEFAULT_VOICE first then parsed JSON — good; but no validation that stored rate is within 0.5–1.3 range (speak() clamps to 0.5–1.5 which is fine, but slider min/max differs from clamp)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SettingsModal fully verified via headless Playwright against public REACT_APP_BACKEND_URL. localStorage key 'ket_voice_v1' correctly stores {accent, rate}. Audio playback is silent in headless (expected).",
+  "rca of the issue": "N/A — no defects found."
+}

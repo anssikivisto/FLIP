@@ -5,6 +5,7 @@ import { isMuted, setMuted } from "./lib/audio";
 import { playStar } from "./lib/audio";
 import { earnedStickerIds, getStickerById } from "./lib/stickers";
 import { StickerAlbum, StickerUnlockPopup } from "./components/Stickers";
+import { SettingsModal } from "./components/SettingsModal";
 import { Header } from "./components/Chrome";
 import { TopicMenu, NumberLevelSelect, TaskMenu, RoundComplete } from "./components/Screens";
 import { RecognizeTask } from "./components/tasks/RecognizeTask";
@@ -30,6 +31,7 @@ export default function App() {
   const [muted, setMutedState] = useState(isMuted());
   const [roundStars, setRoundStars] = useState(0);
   const [celebrate, setCelebrate] = useState([]); // queue of newly unlocked sticker ids
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     loadContent().then(setTopics).catch(() => setError(true));
@@ -156,6 +158,7 @@ export default function App() {
         stars={progress.stars}
         muted={muted}
         onToggleMute={toggleMute}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 sm:py-10 flex flex-col items-center">
@@ -197,6 +200,8 @@ export default function App() {
         sticker={celebrate.length ? getStickerById(celebrate[0]) : null}
         onClose={() => setCelebrate((q) => q.slice(1))}
       />
+
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

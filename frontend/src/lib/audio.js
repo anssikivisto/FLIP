@@ -1,6 +1,8 @@
 // Speech synthesis (English words) + Web Audio sound effects + mute handling.
 
 const MUTE_KEY = "ket_muted";
+const VOICE_KEY = "ket_voice_v1";
+const DEFAULT_VOICE = { accent: "gb", rate: 0.85 };
 
 export function isMuted() {
   return localStorage.getItem(MUTE_KEY) === "1";
@@ -8,6 +10,20 @@ export function isMuted() {
 
 export function setMuted(muted) {
   localStorage.setItem(MUTE_KEY, muted ? "1" : "0");
+}
+
+export function getVoiceSettings() {
+  try {
+    return { ...DEFAULT_VOICE, ...JSON.parse(localStorage.getItem(VOICE_KEY) || "{}") };
+  } catch (e) {
+    return { ...DEFAULT_VOICE };
+  }
+}
+
+export function setVoiceSettings(patch) {
+  const merged = { ...getVoiceSettings(), ...patch };
+  localStorage.setItem(VOICE_KEY, JSON.stringify(merged));
+  return merged;
 }
 
 let _voices = [];
@@ -20,14 +36,13 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
   window.speechSynthesis.onvoiceschanged = loadVoices;
 }
 
-function pickEnglishVoice() {
+function pickEnglishVoice(accent) {
   if (!_voices.length) loadVoices();
-  return (
-    _voices.find((v) => /en[-_]GB/i.test(v.lang)) ||
-    _voices.find((v) => /en[-_]US/i.test(v.lang)) ||
-    _voices.find((v) => /^en/i.test(v.lang)) ||
-    null
-  );
+  const gb = _voices.find((v) => /en[-_]GB/i.test(v.lang));
+  const us = _voices.find((v) => /en[-_]US/i.test(v.lang));
+  const anyEn = _voices.find((v) => /^en/i.test(v.lang));
+  if (accent === "us") return us || gb || anyEn || null;
+  return gb || us || anyEn || null;
 }
 
 // Read an English word aloud. Fallback-safe across browsers.
@@ -37,12 +52,13 @@ export function speak(text, { onEnd } = {}) {
     return;
   }
   try {
+    const { accent, rate } = getVoiceSettings();
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const voice = pickEnglishVoice();
+    const voice = pickEnglishVoice(accent);
     if (voice) u.voice = voice;
-    u.lang = voice ? voice.lang : "en-US";
-    u.rate = 0.82;
+    u.lang = accent === "us" ? "en-US" : "en-GB";
+    u.rate = Math.min(1.5, Math.max(0.5, rate || 0.85));
     u.pitch = 1.08;
     if (onEnd) u.onend = onEnd;
     window.speechSynthesis.speak(u);
