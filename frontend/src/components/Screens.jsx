@@ -3,6 +3,7 @@ import { Mascot, NextArrow } from "./Chrome";
 import { Star, Flame, RotateCcw } from "lucide-react";
 
 const TASKS = [
+  { id: "opettele", fi: "Opettele", emoji: "📚", desc: "Kertaa sanat – ei tähtiä", color: "#FBBF24", border: "#D97706" },
   { id: "recognize", fi: "Tunnista", emoji: "🎧", desc: "Kuuntele ja napauta", color: "#38BDF8", border: "#0284C7" },
   { id: "match", fi: "Yhdistä", emoji: "🧩", desc: "Yhdistä sana ja kuva", color: "#A855F7", border: "#7E22CE" },
   { id: "speak", fi: "Puhu", emoji: "🎙️", desc: "Sano ja kuuntele itseäsi", color: "#FB7185", border: "#BE123C" },

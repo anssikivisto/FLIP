@@ -13,6 +13,11 @@ function buildBatches(pool) {
   for (let i = 0; i < picked.length; i += BATCH) {
     batches.push(picked.slice(i, i + BATCH));
   }
+  // Avoid a lonely trailing batch of 1 — merge it into the previous batch.
+  if (batches.length > 1 && batches[batches.length - 1].length < 2) {
+    const tail = batches.pop();
+    batches[batches.length - 1] = batches[batches.length - 1].concat(tail);
+  }
   return batches;
 }
 

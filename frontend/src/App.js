@@ -8,9 +8,10 @@ import { RecognizeTask } from "./components/tasks/RecognizeTask";
 import { MatchTask } from "./components/tasks/MatchTask";
 import { SpeakTask } from "./components/tasks/SpeakTask";
 import { WriteTask } from "./components/tasks/WriteTask";
+import { FlashcardsTask } from "./components/tasks/FlashcardsTask";
 import { Loader2 } from "lucide-react";
 
-const TASK_LABEL = { recognize: "Tunnista", match: "Yhdistä", speak: "Puhu", write: "Kirjoita sana" };
+const TASK_LABEL = { opettele: "Opettele", recognize: "Tunnista", match: "Yhdistä", speak: "Puhu", write: "Kirjoita sana" };
 
 export default function App() {
   const [topics, setTopics] = useState(null);
@@ -60,6 +61,11 @@ export default function App() {
   };
 
   const onFinish = () => {
+    // Flashcards is a review mode — no stars, no round-complete screen.
+    if (task === "opettele") {
+      setScreen("tasks");
+      return;
+    }
     setProgress(completeRound(topic.id, task));
     setScreen("complete");
   };
@@ -136,6 +142,9 @@ export default function App() {
         {screen === "levels" && topic && <NumberLevelSelect topic={topic} onPick={pickLevel} />}
         {screen === "tasks" && topic && <TaskMenu topic={topic} onPick={pickTask} />}
 
+        {screen === "game" && task === "opettele" && (
+          <FlashcardsTask key={gameKey} topic={topic} pool={pool} onFinish={onFinish} />
+        )}
         {screen === "game" && task === "recognize" && (
           <RecognizeTask key={gameKey} topic={topic} pool={pool} onStar={onStar} onFinish={onFinish} />
         )}

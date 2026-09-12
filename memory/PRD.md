@@ -23,11 +23,13 @@ Pelillistetty sanastopeli suomenkielisille 7–8-vuotiaille (Finnish → English
 
 ## Implemented (2026-06-12)
 - Backend content library + 3 read endpoints, MongoDB seeding. (tested 100%)
-- Topic menu, number-level select, task menu, round-complete screen with mascot (Koko Pöllö 🦉).
-- All 4 task components: Recognize (10 Q), Match (tap + drag, batches of 4), Speak (record/playback, mic fallback, no scoring), Write (live green letters, case-insensitive, hint, TTS on complete).
+- Topic menu, number-level select, task menu, round-complete screen with mascot (frog Flip 🐸).
+- Task components: Opettele (flashcards review, NO stars), Recognize (correct answer shown large & centered, stays until player clicks → arrow), Match (tap + drag, uses ALL topic words in batches of 4), Speak (record/playback, mic fallback, no scoring), Write (live green letters, case-insensitive, two-step hint: 1st press speaks, 2nd press also shows word, TTS on complete).
 - Sticky top back-button, → NextArrow, star + streak counters, mute toggle, reset progress.
 - localStorage progress + content caching. Warm playful palette, Fredoka/Nunito fonts, tactile 3D buttons, staggered animations.
-- Full e2e tested: backend 9/9 pytest, frontend all flows pass.
+- Topics (7): Eläimet 25, Värit 10, Numerot (1-10/11-20/21-100), Ruoat 25, Keho 25, Vaatteet 25, Luonto 25.
+- Header title "English Trainer".
+- Full e2e tested twice: backend 10/10 pytest, frontend all flows pass.
 
 ## Backlog / Future (not now)
 - P2: More topics (Perhe, Keho, Sää, Vaatteet).

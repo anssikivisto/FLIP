@@ -1,0 +1,19 @@
+{
+  "summary": "Verified additive changes: 7-topic content API, Opettele flashcards mode, Recognize overlay persistence, and full-pool Match batches. Backend 10/10 pytest tests pass (7 topics with correct ids/order/counts; body/clothes/nature items each carry en/fi/emoji; no mongo _id; /api/topics lightweight; per-id endpoints for new topics; 404 for unknown). Frontend Playwright: TopicMenu renders topic-body, topic-clothes, topic-nature; TaskMenu shows task-opettele first plus recognize/match/speak/write. Flashcards (body pool): counter 1/25, flashcard-prev-button disabled on first card, next-word-button label becomes 'Valmis' on last card, clicking Valmis returns to task menu (RoundComplete / play-again-button NOT shown) and star-rewards-counter stays 0 (NO stars awarded). MatchTask for body shows 'Osa 1 / 7' -> 7 batches (>2). RecognizeTask: after correct pick, recognize-correct-overlay renders and stays visible after 2.5s (no auto-dismiss); clicking the overlay background advances to next question.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_content_api.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "RecognizeTask overlay uses a full-viewport click target that also captures clicks on the inner NextArrow area; NextArrow's onClick uses e.stopPropagation which is fine, but note that pressing any other key/touch elsewhere does not dismiss — intended per spec.",
+    "FlashcardsTask calls speak(item.en) on every idx change via a 350ms timeout; going back/forth quickly will queue multiple utterances (audio lib likely cancels prior). Acceptable.",
+    "MatchTask now iterates all words; last batch can be size 1 (e.g. 25 % 4 = 1) which is trivially solvable — consider merging tiny trailing batches into previous. Minor UX polish, not a bug."
+  ],
+  "updated_files": ["/app/backend/tests/test_content_api.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "n/a (no auth)",
+  "seed_data_creation": "Content auto-seeded on backend startup (idempotent).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend at /api/content now returns 7 topics in order animals,colors,numbers,foods,body,clothes,nature. Flashcards testids: flashcard-prev-button, next-word-button, audio-listen-button. RecognizeTask new testid: recognize-correct-overlay (full-screen div, click to advance; inner NextArrow uses next-word-button testid). MatchTask iterates full pool in BATCH=4 chunks."
+}
