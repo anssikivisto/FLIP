@@ -1,0 +1,28 @@
+{
+  "summary": "Verified audio-stability bug fix. Instrumented window.speechSynthesis.speak and captured /api/tts/ network. In Recognize (Numerot 1-10) and Match (Värit) tasks, browser-voice fallback was NEVER invoked (0 calls) across a full round; all TTS requests returned 200; prefetch fires on game mount as designed. Blob cache prevents repeat HTTP after first fetch. Fix appears solid.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_evidence": {
+    "recognize_numbers_1_10": {"browser_speak_calls": 0, "tts_requests": 9, "tts_statuses": {"200": 9}, "prefetch_on_mount": true},
+    "match_colors": {"browser_speak_calls": 0, "prefetch_tts_requests": 10, "prefetch_statuses": {"200": 10}, "additional_tts_during_gameplay": 0, "note": "0 extra HTTP during matching is EXPECTED - blob cache serves speak() from memory. Confirmed via console logs that BROWSER_VOICE_SPEAK never printed.", "rounds_played": 3, "matches_completed": 10, "stars_earned": 10}
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "audio.js: getAudio() correctly stores the Promise in cache immediately (prevents duplicate parallel fetches) and evicts on null resolution to allow retry. Good.",
+    "_seq sequence guard is monotonic and only the latest speak() may fall back — matches the reported fix intent.",
+    "stopCurrent() clears onended/onerror before pause() to avoid spurious onEnd firing on interruption. Good.",
+    "Minor: URL.createObjectURL blobs are never revoked - small memory leak per unique slug, but bounded by vocabulary size (~234), acceptable.",
+    "Minor: speechSynthesis.onvoiceschanged assignment overwrites any prior handler; not an issue here but worth noting."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Instrumentation approach: page.add_init_script wrapping window.speechSynthesis.speak to count calls; page.on('response') to capture /api/tts/ requests. Match testids are match-word-<en> and match-image-<en> (correct pair shares english word). Back button testid is 'back-button' not 'header-back'."
+}

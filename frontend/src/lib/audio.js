@@ -60,13 +60,43 @@ function pickEnglishVoice() {
   );
 }
 
-let _audio = null;
+// In-memory cache of fetched audio: slug -> Promise<objectURL | null>.
+// Caching makes repeat playback instant and makes fallback deterministic.
+const _audioCache = new Map();
+let _seq = 0; // only the most recent speak() may fall back / call onEnd
+let _current = null;
+
+function getAudio(text) {
+  const slug = slugify(text);
+  if (_audioCache.has(slug)) return _audioCache.get(slug);
+  const p = fetch(ttsUrl(text))
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return URL.createObjectURL(blob);
+    })
+    .catch(() => null);
+  // Allow a retry later if this attempt failed (transient network / not-yet-generated).
+  p.then((v) => {
+    if (v === null) _audioCache.delete(slug);
+  });
+  _audioCache.set(slug, p);
+  return p;
+}
+
+// Warm the cache for a set of words (e.g. when a game round starts).
+export function prefetchAudio(texts) {
+  if (isMuted()) return;
+  (texts || []).forEach((t) => t && getAudio(t));
+}
 
 function stopCurrent() {
   try {
-    if (_audio) {
-      _audio.pause();
-      _audio = null;
+    if (_current) {
+      _current.onended = null;
+      _current.onerror = null;
+      _current.pause();
+      _current = null;
     }
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   } catch (e) {
@@ -80,21 +110,27 @@ export function speak(text, { onEnd } = {}) {
     if (onEnd) setTimeout(onEnd, 200);
     return;
   }
+  const mySeq = ++_seq;
   stopCurrent();
   const { rate } = getVoiceSettings();
-  const audio = new Audio(ttsUrl(text));
-  audio.playbackRate = clampRate(rate);
-  _audio = audio;
-  let fellBack = false;
-  const fallback = () => {
-    if (fellBack) return;
-    fellBack = true;
-    speakBrowser(text, { onEnd });
-  };
-  audio.onended = () => onEnd && onEnd();
-  audio.onerror = fallback;
-  const p = audio.play();
-  if (p && p.catch) p.catch(fallback);
+  getAudio(text).then((objUrl) => {
+    if (mySeq !== _seq) return; // superseded by a newer speak() — do nothing
+    if (!objUrl) {
+      speakBrowser(text, { onEnd }); // genuinely missing audio -> browser voice
+      return;
+    }
+    const audio = new Audio(objUrl);
+    audio.playbackRate = clampRate(rate);
+    _current = audio;
+    audio.onended = () => {
+      if (mySeq === _seq && onEnd) onEnd();
+    };
+    audio.play().catch(() => {
+      // If this call was superseded, the rejection is just an interruption — ignore.
+      // Only the latest call, if truly blocked, falls back to the browser voice.
+      if (mySeq === _seq) speakBrowser(text, { onEnd });
+    });
+  });
 }
 
 function speakBrowser(text, { onEnd } = {}) {

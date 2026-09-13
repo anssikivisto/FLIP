@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { loadContent, getPool } from "./lib/content";
 import { getProgress, addStars, completeRound, resetProgress, addUnlocked } from "./lib/storage";
 import { playStar } from "./lib/audio";
+import { prefetchAudio } from "./lib/audio";
 import { earnedStickerIds, getStickerById } from "./lib/stickers";
 import { StickerAlbum, StickerUnlockPopup } from "./components/Stickers";
 import { SettingsModal } from "./components/SettingsModal";
@@ -34,6 +35,13 @@ export default function App() {
   useEffect(() => {
     loadContent().then(setTopics).catch(() => setError(true));
   }, []);
+
+  // Warm the audio cache for the round's words so AI voice plays instantly & reliably.
+  useEffect(() => {
+    if (screen === "game" && topic) {
+      prefetchAudio(getPool(topic, level).map((it) => it.en));
+    }
+  }, [screen, topic, level]);
 
   // Unlock any stickers newly earned by this progress, and queue celebrations.
   const syncStickers = useCallback((p) => {
