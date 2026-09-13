@@ -99,6 +99,13 @@ body {
 }
 .ket-shake { animation: ket-shake 0.4s ease-in-out; }
 
+@keyframes ket-drag-hint {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    50% { transform: translateX(48px) rotate(10deg); }
+}
+.ket-drag-hint { display: inline-block; animation: ket-drag-hint 1.3s ease-in-out infinite; }
+
+
 .ket-stagger > * { animation: ket-fade-in 0.4s ease-out both; }
 .ket-stagger > *:nth-child(1) { animation-delay: 0.03s; }
 .ket-stagger > *:nth-child(2) { animation-delay: 0.09s; }

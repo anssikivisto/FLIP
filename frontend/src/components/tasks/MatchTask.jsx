@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ItemImage } from "../ItemImage";
 import { Mascot } from "../Chrome";
 import { shuffle } from "../../lib/content";
@@ -32,8 +33,16 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
   const [wrongImg, setWrongImg] = useState(null);
   const [drag, setDrag] = useState(null); // { word, x, y, moved }
   const [hoverImg, setHoverImg] = useState(null);
+  const [showHint, setShowHint] = useState(
+    () => localStorage.getItem("ket_match_hint_seen") !== "1"
+  );
   const startRef = useRef({ x: 0, y: 0 });
   const matchedRef = useRef({});
+
+  const dismissHint = () => {
+    setShowHint(false);
+    localStorage.setItem("ket_match_hint_seen", "1");
+  };
 
   const current = batches[bi];
   const allMatched = current.every((it) => matched[it.en]);
@@ -81,6 +90,7 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
 
   const onPointerDown = (e, w) => {
     if (matched[w.en]) return;
+    if (showHint) dismissHint();
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch (err) {}
@@ -123,7 +133,18 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
         Osa {bi + 1} / {batches.length}
       </p>
 
-      <div className="grid grid-cols-2 gap-5 sm:gap-8 w-full max-w-3xl mx-auto">
+      <div className="relative grid grid-cols-2 gap-5 sm:gap-8 w-full max-w-3xl mx-auto">
+        {showHint && (
+          <div
+            data-testid="match-drag-hint"
+            className="pointer-events-none absolute inset-x-0 -top-3 flex justify-center z-30"
+          >
+            <div className="flex items-center gap-2 bg-white/95 border-4 border-amber-300 rounded-full px-4 py-2 shadow-lg ket-pop">
+              <span className="text-3xl ket-drag-hint">👉</span>
+              <span className="font-fredoka font-bold text-slate-600">Raahaa sana kuvaan!</span>
+            </div>
+          </div>
+        )}
         {/* Words */}
         <div className="flex flex-col gap-3 ket-stagger">
           {words.map((w) => {
@@ -138,14 +159,12 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
                 onPointerMove={onPointerMove}
                 onPointerUp={(e) => onPointerUp(e, w)}
                 disabled={done}
-                className={`ket-btn px-4 py-4 font-fredoka font-bold text-xl sm:text-2xl text-center touch-none ${
-                  done ? "opacity-40" : ""
-                }`}
+                className="ket-btn px-4 py-4 font-fredoka font-bold text-xl sm:text-2xl text-center touch-none"
                 style={{
                   backgroundColor: active ? topic.theme.accent : "#fff",
                   color: active ? "#fff" : "#1E293B",
                   borderColor: topic.theme.border,
-                  opacity: isDragging ? 0.35 : done ? 0.4 : 1,
+                  visibility: done || isDragging ? "hidden" : "visible",
                 }}
               >
                 {w.en}
@@ -186,23 +205,27 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
         </div>
       </div>
 
-      {/* Floating dragged tile — centered on the pointer */}
-      {drag && drag.moved && (
-        <div
-          className="fixed font-fredoka font-bold text-xl sm:text-2xl px-5 py-4 rounded-2xl border-4 shadow-2xl text-white ket-pop"
-          style={{
-            left: drag.x,
-            top: drag.y,
-            transform: "translate(-50%, -50%) rotate(-3deg)",
-            backgroundColor: topic.theme.accent,
-            borderColor: topic.theme.border,
-            pointerEvents: "none",
-            zIndex: 60,
-          }}
-        >
-          {drag.word.en}
-        </div>
-      )}
+      {/* Floating dragged tile — centered on the pointer (portal to body so
+          position:fixed is relative to the viewport, not a transformed ancestor) */}
+      {drag &&
+        drag.moved &&
+        createPortal(
+          <div
+            className="fixed font-fredoka font-bold text-xl sm:text-2xl px-5 py-4 rounded-2xl border-4 shadow-2xl text-white"
+            style={{
+              left: drag.x,
+              top: drag.y,
+              transform: "translate(-50%, -50%) rotate(-3deg) scale(1.06)",
+              backgroundColor: topic.theme.accent,
+              borderColor: topic.theme.border,
+              pointerEvents: "none",
+              zIndex: 9999,
+            }}
+          >
+            {drag.word.en}
+          </div>,
+          document.body
+        )}
 
       {allMatched && (
         <div className="font-fredoka font-bold text-2xl text-green-600 ket-pop">Loistavaa! 🎉</div>
