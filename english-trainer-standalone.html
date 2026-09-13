@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>English Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root { --canvas:#FAF8F0; --ink:#1E293B; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
+    background-color:var(--canvas);
+    background-image:radial-gradient(#f2e9d0 1.4px,transparent 1.4px); background-size:26px 26px;
+    min-height:100vh; overscroll-behavior:none; user-select:none; }
+  .fred { font-family:'Fredoka',system-ui,sans-serif; }
+  header { position:sticky; top:0; z-index:50; background:rgba(255,255,255,.95); backdrop-filter:blur(8px);
+    border-bottom:4px solid #FDE68A; border-radius:0 0 24px 24px; }
+  .hbar { max-width:960px; margin:0 auto; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 48px; display:flex; flex-direction:column; align-items:center; }
+  .btn { border:4px solid; border-bottom-width:8px; border-radius:20px; cursor:pointer; background:#fff;
+    transition:transform .08s ease,border-bottom-width .08s ease,background-color .15s; font-family:'Fredoka',sans-serif; }
+  .btn:active { transform:translateY(4px); border-bottom-width:4px; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .grid { display:grid; gap:20px; width:100%; }
+  .pop { animation:pop .35s cubic-bezier(.34,1.56,.64,1) both; }
+  .fade { animation:fade .4s ease-out both; }
+  .bounce { animation:bounce 2.4s ease-in-out infinite; }
+  .wiggle { animation:wiggle .4s ease-in-out; }
+  .shake { animation:shake .4s ease-in-out; }
+  @keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+  @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  @keyframes draghint{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(48px) rotate(10deg)}}
+  .draghint{display:inline-block;animation:draghint 1.3s ease-in-out infinite}
+  .overlay { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.3); padding:20px; }
+  input[type=range]{ accent-color:#38BDF8; height:12px; }
+  .txtin { border:4px solid; border-radius:16px; padding:14px 20px; font-family:'Fredoka',sans-serif; font-weight:700;
+    font-size:20px; text-align:center; outline:none; width:100%; max-width:320px; }
+  .tile { width:38px; height:44px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px;
+    border:2px solid #CBD5E1; background:#F8FAFC; font-family:'Fredoka',sans-serif; font-weight:700; font-size:22px;
+    text-transform:uppercase; color:#94A3B8; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ============================ CONTENT LIBRARY ============================ */
+const ANIMALS=[["dog","koira","🐶"],["cat","kissa","🐱"],["bear","karhu","🐻"],["lion","leijona","🦁"],["rabbit","pupu","🐰"],["fox","kettu","🦊"],["elephant","norsu","🐘"],["monkey","apina","🐒"],["bird","lintu","🐦"],["duck","sorsa","🦆"],["horse","hevonen","🐴"],["pig","possu","🐷"],["frog","sammakko","🐸"],["fish","kala","🐟"],["owl","pöllö","🦉"],["wolf","susi","🐺"],["mouse","hiiri","🐭"],["turtle","kilpikonna","🐢"],["bee","mehiläinen","🐝"],["butterfly","perhonen","🦋"],["penguin","pingviini","🐧"],["dolphin","delfiini","🐬"],["giraffe","kirahvi","🦒"],["koala","koala","🐨"],["tiger","tiikeri","🐯"]];
+const FOODS=[["apple","omena","🍎"],["banana","banaani","🍌"],["pizza","pitsa","🍕"],["milk","maito","🥛"],["bread","leipä","🍞"],["cheese","juusto","🧀"],["ice cream","jäätelö","🍦"],["strawberry","mansikka","🍓"],["carrot","porkkana","🥕"],["cake","kakku","🎂"],["cookie","keksi","🍪"],["water","vesi","💧"],["orange","appelsiini","🍊"],["watermelon","vesimeloni","🍉"],["egg","muna","🥚"],["chicken","kana","🍗"],["hamburger","hampurilainen","🍔"],["fries","ranskalaiset","🍟"],["donut","donitsi","🍩"],["candy","karkki","🍬"],["pineapple","ananas","🍍"],["grapes","viinirypäleet","🍇"],["corn","maissi","🌽"],["pancake","ohukainen","🥞"],["honey","hunaja","🍯"]];
+const COLORS=[["red","punainen","#EF4444"],["blue","sininen","#3B82F6"],["yellow","keltainen","#FACC15"],["green","vihreä","#22C55E"],["orange","oranssi","#F97316"],["purple","violetti","#A855F7"],["pink","vaaleanpunainen","#EC4899"],["black","musta","#18181B"],["white","valkoinen","#F4F4F5"],["brown","ruskea","#8B5E34"]];
+const BODY=[["face","kasvot","😊"],["eye","silmä","👁️"],["eyes","silmät","👀"],["ear","korva","👂"],["nose","nenä","👃"],["mouth","suu","👄"],["lips","huulet","🫦"],["tongue","kieli","👅"],["tooth","hammas","🦷"],["hair","hiukset","🦱"],["brain","aivot","🧠"],["heart","sydän","🫀"],["lungs","keuhkot","🫁"],["bone","luu","🦴"],["hand","käsi","✋"],["finger","sormi","👆"],["thumb","peukalo","👍"],["arm","käsivarsi","💪"],["leg","jalka","🦵"],["foot","jalkaterä","🦶"],["skull","pääkallo","💀"],["baby","vauva","👶"],["beard","parta","🧔"],["footprint","jalanjälki","👣"],["nail","kynsi","💅"]];
+const CLOTHES=[["shirt","paita","👕"],["jeans","farkut","👖"],["dress","mekko","👗"],["shoe","kenkä","👟"],["boot","saapas","👢"],["high heels","korkokengät","👠"],["socks","sukat","🧦"],["hat","hattu","👒"],["cap","lippalakki","🧢"],["gloves","hanskat","🧤"],["scarf","kaulaliina","🧣"],["coat","takki","🧥"],["glasses","silmälasit","👓"],["sunglasses","aurinkolasit","🕶️"],["crown","kruunu","👑"],["ring","sormus","💍"],["backpack","reppu","🎒"],["handbag","käsilaukku","👜"],["purse","kukkaro","👛"],["tie","solmio","👔"],["shorts","shortsit","🩳"],["swimsuit","uimapuku","🩱"],["bikini","bikinit","👙"],["sandal","sandaali","🩴"],["top","toppi","🎽"]];
+const NATURE=[["tree","puu","🌳"],["flower","kukka","🌸"],["sun","aurinko","☀️"],["moon","kuu","🌙"],["star","tähti","⭐"],["cloud","pilvi","☁️"],["rain","sade","🌧️"],["snow","lumi","❄️"],["rainbow","sateenkaari","🌈"],["mountain","vuori","⛰️"],["volcano","tulivuori","🌋"],["wave","aalto","🌊"],["leaf","lehti","🍃"],["fire","tuli","🔥"],["rock","kivi","🪨"],["wood","halko","🪵"],["cactus","kaktus","🌵"],["mushroom","sieni","🍄"],["plant","kasvi","🌿"],["clover","apila","🍀"],["palm tree","palmu","🌴"],["pine tree","havupuu","🌲"],["desert","aavikko","🏜️"],["earth","maapallo","🌍"],["tornado","pyörremyrsky","🌪️"]];
+
+const EN_ONES=["","one","two","three","four","five","six","seven","eight","nine"];
+const EN_TEENS=["ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const EN_TENS=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+const FI_ONES=["","yksi","kaksi","kolme","neljä","viisi","kuusi","seitsemän","kahdeksan","yhdeksän"];
+function numEn(n){ if(n===100)return"one hundred"; if(n<10)return EN_ONES[n]; if(n<20)return EN_TEENS[n-10]; const t=(n/10|0),o=n%10; return o===0?EN_TENS[t]:EN_TENS[t]+"-"+EN_ONES[o]; }
+function numFi(n){ if(n===100)return"sata"; if(n===10)return"kymmenen"; if(n<10)return FI_ONES[n]; if(n<20)return FI_ONES[n-10]+"toista"; const t=(n/10|0),o=n%10,tw=FI_ONES[t]+"kymmentä"; return o===0?tw:tw+FI_ONES[o]; }
+function numItems(a,b){ const r=[]; for(let n=a;n<=b;n++) r.push({en:numEn(n),fi:numFi(n),display:String(n)}); return r; }
+
+function mk(list){ return list.map(x=>({en:x[0],fi:x[1],emoji:x[2]})); }
+function mkc(list){ return list.map(x=>({en:x[0],fi:x[1],hex:x[2]})); }
+
+const TOPICS=[
+  {id:"animals",title:"Eläimet",en:"Animals",emoji:"🦁",kind:"emoji",theme:{bg:"#FEF3C7",border:"#F59E0B",accent:"#D97706"},items:mk(ANIMALS)},
+  {id:"colors",title:"Värit",en:"Colors",emoji:"🎨",kind:"color",theme:{bg:"#F3E8FF",border:"#A855F7",accent:"#7E22CE"},items:mkc(COLORS)},
+  {id:"numbers",title:"Numerot",en:"Numbers",emoji:"🔢",kind:"number",theme:{bg:"#E0F2FE",border:"#0EA5E9",accent:"#0369A1"},levels:[
+    {id:"1-10",label:"1 – 10",items:numItems(1,10)},{id:"11-20",label:"11 – 20",items:numItems(11,20)},{id:"21-100",label:"21 – 100",items:numItems(21,100)}]},
+  {id:"foods",title:"Ruoat",en:"Foods",emoji:"🍕",kind:"emoji",theme:{bg:"#D1FAE5",border:"#10B981",accent:"#047857"},items:mk(FOODS)},
+  {id:"body",title:"Keho",en:"Body",emoji:"🖐️",kind:"emoji",theme:{bg:"#FFE4E6",border:"#FB7185",accent:"#BE123C"},items:mk(BODY)},
+  {id:"clothes",title:"Vaatteet",en:"Clothes",emoji:"👕",kind:"emoji",theme:{bg:"#E0E7FF",border:"#6366F1",accent:"#4338CA"},items:mk(CLOTHES)},
+  {id:"nature",title:"Luonto",en:"Nature",emoji:"🌳",kind:"emoji",theme:{bg:"#CCFBF1",border:"#14B8A6",accent:"#0F766E"},items:mk(NATURE)},
+];
+const TASKS=[
+  {id:"opettele",fi:"Opettele",emoji:"📚",desc:"Kertaa sanat – ei tähtiä",border:"#D97706"},
+  {id:"recognize",fi:"Tunnista",emoji:"🎧",desc:"Kuuntele ja napauta",border:"#0284C7"},
+  {id:"match",fi:"Yhdistä",emoji:"🧩",desc:"Yhdistä sana ja kuva",border:"#7E22CE"},
+  {id:"speak",fi:"Puhu",emoji:"🎙️",desc:"Sano ja kuuntele itseäsi",border:"#BE123C"},
+  {id:"write",fi:"Kirjoita sana",emoji:"✍️",desc:"Kirjoita kirjaimet",border:"#15803D"},
+];
+const TASK_LABEL={opettele:"Opettele",recognize:"Tunnista",match:"Yhdistä",speak:"Puhu",write:"Kirjoita sana"};
+
+/* ============================ STICKERS ============================ */
+const MASTERY_TIMES=3;
+const STAR_STICKERS=[["star","🌟","Tähti",15],["rainbow","🌈","Sateenkaari",40],["lollipop","🍭","Tikkari",75],["rocket","🚀","Raketti",120],["unicorn","🦄","Yksisarvinen",175],["crown","👑","Kruunu",240],["dragon","🐉","Lohikäärme",320],["trophy","🏆","Pokaali",420],["diamond","💎","Timantti",550],["world","🌍","Maailma",700]].map(x=>({id:x[0],emoji:x[1],name:x[2],cost:x[3]}));
+const MASTERY_STICKERS=[["m_animals","🦁","Eläinmestari","animals","Eläimet"],["m_colors","🎨","Värimestari","colors","Värit"],["m_numbers","🔢","Numeromestari","numbers","Numerot"],["m_foods","🍕","Ruokamestari","foods","Ruoat"],["m_body","🖐️","Kehomestari","body","Keho"],["m_clothes","👕","Vaatemestari","clothes","Vaatteet"],["m_nature","🌳","Luontomestari","nature","Luonto"]].map(x=>({id:x[0],emoji:x[1],name:x[2],topic:x[3],topicFi:x[4]}));
+const ALL_STICKERS=[...STAR_STICKERS,...MASTERY_STICKERS];
+function stickerById(id){ return ALL_STICKERS.find(s=>s.id===id); }
+function topicRounds(topicId){ return Object.entries(prog.completed||{}).filter(([k])=>k.startsWith(topicId+":")).reduce((s,[,v])=>s+v,0); }
+function earnedStickerIds(){ const ids=[]; STAR_STICKERS.forEach(s=>{ if((prog.stars||0)>=s.cost) ids.push(s.id); }); MASTERY_STICKERS.forEach(m=>{ if(topicRounds(m.topic)>=MASTERY_TIMES) ids.push(m.id); }); return ids; }
+
+/* ============================ STORAGE ============================ */
+const PKEY="et_std_progress", VKEY="et_std_voice", HKEY="et_std_matchhint", MKEY="et_std_muted";
+let prog = load(PKEY,{stars:0,streak:0,lastPlayDay:null,completed:{},unlocked:[]});
+let voice = load(VKEY,{rate:0.9});
+function load(k,def){ try{ return {...def,...JSON.parse(localStorage.getItem(k)||"{}")}; }catch(e){ return {...def}; } }
+function saveProg(){ localStorage.setItem(PKEY,JSON.stringify(prog)); }
+function addStars(n){ prog.stars+=n; saveProg(); syncStickers(); }
+function completeRound(topicId,task){ const today=new Date().toISOString().slice(0,10); if(prog.lastPlayDay!==today){ const y=new Date(Date.now()-864e5).toISOString().slice(0,10); prog.streak=prog.lastPlayDay===y?prog.streak+1:1; prog.lastPlayDay=today; } const key=topicId+":"+task; prog.completed[key]=(prog.completed[key]||0)+1; saveProg(); syncStickers(); }
+function resetProgress(){ prog={stars:0,streak:0,lastPlayDay:null,completed:{},unlocked:[]}; saveProg(); }
+let celebrateQueue=[];
+function syncStickers(){ const earned=earnedStickerIds(); const cur=prog.unlocked||[]; const fresh=earned.filter(id=>!cur.includes(id)); if(fresh.length){ prog.unlocked=[...new Set([...cur,...earned])]; saveProg(); celebrateQueue.push(...fresh); playStar(); showCelebration(); } }
+function isMuted(){ return localStorage.getItem(MKEY)==="1"; }
+function setMuted(m){ localStorage.setItem(MKEY,m?"1":"0"); }
+
+/* ============================ AUDIO ============================ */
+let _voices=[];
+function loadVoices(){ if('speechSynthesis'in window) _voices=speechSynthesis.getVoices()||[]; }
+if('speechSynthesis'in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+function pickVoice(){ if(!_voices.length)loadVoices(); return _voices.find(v=>/en[-_]GB/i.test(v.lang))||_voices.find(v=>/en[-_]US/i.test(v.lang))||_voices.find(v=>/^en/i.test(v.lang))||null; }
+function speak(text,onEnd){ if(isMuted()||!text||!('speechSynthesis'in window)){ if(onEnd)setTimeout(onEnd,200); return; } try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); const v=pickVoice(); if(v)u.voice=v; u.lang=v?v.lang:"en-US"; u.rate=Math.min(1.5,Math.max(0.5,voice.rate||0.9)); u.pitch=1.08; if(onEnd)u.onend=onEnd; speechSynthesis.speak(u); }catch(e){ if(onEnd)setTimeout(onEnd,200);} }
+let _ctx=null;
+function ac(){ if(isMuted())return null; try{ if(!_ctx)_ctx=new (window.AudioContext||window.webkitAudioContext)(); if(_ctx.state==="suspended")_ctx.resume(); return _ctx; }catch(e){ return null; } }
+function tone(f,st,d,type,g){ const c=ac(); if(!c)return; const o=c.createOscillator(),ga=c.createGain(); o.type=type||"sine"; o.frequency.setValueAtTime(f,c.currentTime+st); ga.gain.setValueAtTime(1e-4,c.currentTime+st); ga.gain.exponentialRampToValueAtTime(g||0.18,c.currentTime+st+.02); ga.gain.exponentialRampToValueAtTime(1e-4,c.currentTime+st+d); o.connect(ga); ga.connect(c.destination); o.start(c.currentTime+st); o.stop(c.currentTime+st+d+.02); }
+function playCorrect(){ tone(523.25,0,.16,"triangle"); tone(659.25,.12,.16,"triangle"); tone(783.99,.24,.28,"triangle"); }
+function playTry(){ tone(392,0,.14,"sine",.14); tone(329.63,.1,.2,"sine",.14); }
+function playStar(){ tone(659.25,0,.12,"square",.12); tone(783.99,.1,.12,"square",.12); tone(1046.5,.2,.32,"square",.12); }
+
+/* ============================ HELPERS ============================ */
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function imgHTML(item,kind,size){ size=size||"72px";
+  if(kind==="color") return '<span style="display:inline-block;width:58px;height:58px;border-radius:50%;border:4px solid #fff;background:'+item.hex+';box-shadow:inset 0 3px 8px rgba(0,0,0,.18),0 3px 6px rgba(0,0,0,.12)"></span>';
+  if(kind==="number") return '<span class="fred" style="font-weight:700;font-size:'+size+';color:#0369A1;line-height:1">'+item.display+'</span>';
+  return '<span style="font-size:'+size+';line-height:1">'+item.emoji+'</span>'; }
+function getPool(topic,level){ if(topic.levels){ const l=topic.levels.find(x=>x.id===level)||topic.levels[0]; return l.items; } return topic.items; }
+
+/* ============================ STATE + ROUTER ============================ */
+const S={screen:"menu",topic:null,level:null,task:null,roundStars:0};
+const root=document.getElementById("root");
+function go(screen){ S.screen=screen; render(); }
+function pickTopic(t){ S.topic=t; S.level=null; go(t.levels?"levels":"tasks"); }
+function pickLevel(id){ S.level=id; go("tasks"); }
+function pickTask(id){ S.task=id; S.roundStars=0; go("game"); }
+function onStar(){ S.roundStars++; addStars(1); renderHeader(); }
+function finishRound(){ if(S.task!=="opettele") completeRound(S.topic.id,S.task); if(S.task==="opettele"){ go("tasks"); } else { go("complete"); } }
+function handleBack(){ if(S.screen==="game"||S.screen==="complete") go("tasks"); else if(S.screen==="tasks") go(S.topic&&S.topic.levels?"levels":"menu"); else if(S.screen==="levels") go("menu"); else if(S.screen==="stickers") go("menu"); }
+
+function render(){
+  const canBack=S.screen!=="menu";
+  const accent=S.screen==="stickers"?"#D97706":(S.topic?S.topic.theme.accent:"#0369A1");
+  let title="English Trainer";
+  if(S.screen==="stickers")title="Tarrat 🏅";
+  else if(S.screen==="game"||S.screen==="complete")title=S.topic.title+" · "+TASK_LABEL[S.task];
+  else if(S.topic&&S.screen!=="menu")title=S.topic.title;
+  root.innerHTML='<header><div class="hbar">'+
+    '<button id="back" class="btn" '+(canBack?"":"disabled")+' style="display:flex;align-items:center;gap:6px;padding:10px 16px;font-weight:600;font-size:16px;color:'+(canBack?"#fff":"#94A3B8")+';background:'+(canBack?"#FB7185":"#E2E8F0")+';border-color:'+(canBack?"#BE123C":"#CBD5E1")+'">← Takaisin</button>'+
+    '<h1 class="fred" style="font-weight:700;font-size:20px;margin:0;color:'+accent+';flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(title)+'</h1>'+
+    '<div style="display:flex;align-items:center;gap:8px">'+
+      '<div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-radius:999px;background:#FEF3C7;border:2px solid #FCD34D;font-weight:800;color:#B45309" class="fred"><span>⭐</span><span id="starcount">'+prog.stars+'</span></div>'+
+      '<button id="mute" class="btn" style="padding:9px" title="Ääni">'+(isMuted()?"🔇":"🔊")+'</button>'+
+      '<button id="settings" class="btn" style="padding:9px" title="Asetukset">⚙️</button>'+
+    '</div></div></header><main id="main"></main>';
+  document.getElementById("back").onclick=()=>{ if(canBack)handleBack(); };
+  document.getElementById("mute").onclick=()=>{ setMuted(!isMuted()); render(); };
+  document.getElementById("settings").onclick=openSettings;
+  const m=document.getElementById("main");
+  ({menu:renderMenu,levels:renderLevels,tasks:renderTasks,game:renderGame,complete:renderComplete,stickers:renderStickers}[S.screen])(m);
+}
+function renderHeader(){ const el=document.getElementById("starcount"); if(el)el.textContent=prog.stars; }
+
+/* ============================ MASCOT ============================ */
+function mascot(msg,small){ const sz=small?"48px":"72px"; const fs=small?"24px":"36px";
+  return '<div style="display:flex;align-items:center;gap:12px;justify-content:center;margin:6px 0 4px">'+
+    '<div class="bounce" style="width:'+sz+';height:'+sz+';font-size:'+fs+';background:#DCFCE7;border:4px solid #4ADE80;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">🐸</div>'+
+    (msg?'<div style="background:#fff;border:4px solid #FCD34D;border-radius:16px;padding:10px 16px;font-weight:700;color:#334155;max-width:460px">'+esc(msg)+'</div>':'')+'</div>'; }
+function nextArrow(id,label){ return '<button id="'+id+'" class="btn fred" style="display:inline-flex;align-items:center;gap:8px;padding:16px 28px;font-weight:700;font-size:22px;color:#fff;background:#38BDF8;border-color:#0284C7">'+esc(label||"Seuraava")+' <span style="font-size:28px">→</span></button>'; }
+
+/* ============================ MENU ============================ */
+function renderMenu(m){
+  const total=STAR_STICKERS.length+MASTERY_STICKERS.length;
+  m.innerHTML='<div class="fade" style="text-align:center"><h2 class="fred" style="font-weight:700;font-size:40px;color:#0369A1;margin:.2em 0">Opitaan englantia! 🌟</h2>'+
+    '<p style="color:#64748B;font-weight:700;font-size:18px;margin:0 0 8px">Valitse aihe ja aloita</p></div>'+
+    mascot("Hei! Olen Flip. Valitaan aihe!")+
+    '<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));max-width:900px;margin-top:14px">'+
+      TOPICS.map(t=>'<button class="btn topic" data-id="'+t.id+'" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px;height:190px;background:'+t.theme.bg+';border-color:'+t.theme.border+'">'+
+        '<span style="font-size:60px">'+t.emoji+'</span><span class="fred" style="font-weight:700;font-size:24px;color:'+t.theme.accent+'">'+t.title+'</span><span style="font-weight:700;color:#94A3B8;font-size:14px">'+t.en+'</span></button>').join("")+
+    '</div>'+
+    '<button id="stickersbtn" class="btn fred" style="margin-top:24px;display:flex;align-items:center;gap:8px;padding:16px 28px;font-weight:700;font-size:20px;color:#78350F;background:#FBBF24;border-color:#D97706">🏅 Tarrat <span style="padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.6)">'+(prog.unlocked||[]).length+'/'+total+'</span></button>'+
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:18px">'+
+      '<div class="fred" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;background:#FEF3C7;border:2px solid #FCD34D;font-weight:800;color:#B45309">⭐ '+prog.stars+' tähteä</div>'+
+      '<div class="fred" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;background:#FFEDD5;border:2px solid #FDBA74;font-weight:800;color:#EA580C">🔥 '+prog.streak+' päivää</div>'+
+      '<button id="reset" class="fred" style="border:2px solid #CBD5E1;background:#F1F5F9;border-radius:999px;padding:8px 16px;font-weight:800;color:#64748B;cursor:pointer">↺ Nollaa</button>'+
+    '</div>';
+  m.querySelectorAll(".topic").forEach(b=>b.onclick=()=>pickTopic(TOPICS.find(t=>t.id===b.dataset.id)));
+  document.getElementById("stickersbtn").onclick=()=>go("stickers");
+  document.getElementById("reset").onclick=()=>{ if(confirm("Nollataanko tähdet ja tarrat?")){ resetProgress(); render(); } };
+}
+function renderLevels(m){ const t=S.topic;
+  m.innerHTML=mascot("Mitkä numerot haluat harjoitella?")+'<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));max-width:760px;margin-top:14px">'+
+    t.levels.map(l=>'<button class="btn lvl" data-id="'+l.id+'" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:30px;height:150px;background:'+t.theme.bg+';border-color:'+t.theme.border+'"><span style="font-size:46px">🔢</span><span class="fred" style="font-weight:700;font-size:28px;color:'+t.theme.accent+'">'+l.label+'</span></button>').join("")+'</div>';
+  m.querySelectorAll(".lvl").forEach(b=>b.onclick=()=>pickLevel(b.dataset.id));
+}
+function renderTasks(m){ const t=S.topic;
+  m.innerHTML=mascot(t.title+" — valitse peli!")+'<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));max-width:760px;margin-top:14px">'+
+    TASKS.map(k=>'<button class="btn tk" data-id="'+k.id+'" style="display:flex;align-items:center;gap:16px;padding:22px;text-align:left;border-color:'+k.border+'"><span style="font-size:46px;flex-shrink:0">'+k.emoji+'</span><span style="display:flex;flex-direction:column"><span class="fred" style="font-weight:700;font-size:24px;color:'+k.border+'">'+k.fi+'</span><span style="font-weight:700;color:#94A3B8">'+k.desc+'</span></span></button>').join("")+'</div>';
+  m.querySelectorAll(".tk").forEach(b=>b.onclick=()=>pickTask(b.dataset.id));
+}
+function renderComplete(m){ const t=S.topic; const stars=Math.min(3,Math.max(1,Math.round(S.roundStars/4)));
+  m.innerHTML='<div class="fade" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px">'+
+    '<div class="bounce" style="font-size:72px">🎉</div>'+
+    '<h2 class="fred" style="font-weight:700;font-size:38px;color:'+t.theme.accent+';margin:0">Hyvin tehty!</h2>'+
+    '<div>'+[0,1,2].map(i=>'<span style="font-size:56px">'+(i<stars?"⭐":"☆")+'</span>').join("")+'</div>'+
+    '<p class="fred" style="font-weight:700;font-size:20px;color:#64748B;margin:0">Sait '+S.roundStars+' tähteä tällä kierroksella!</p>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">'+
+      '<button id="tomenu" class="btn fred" style="padding:16px 24px;font-weight:700;font-size:18px;color:#475569;border-color:#CBD5E1">Valikkoon</button>'+
+      nextArrow("again","Pelaa lisää")+'</div></div>';
+  document.getElementById("tomenu").onclick=()=>go("tasks");
+  document.getElementById("again").onclick=()=>{ S.roundStars=0; go("game"); };
+}
+
+/* ============================ GAME DISPATCH ============================ */
+function renderGame(m){ const pool=getPool(S.topic,S.level); ({opettele:tOpettele,recognize:tRecognize,match:tMatch,speak:tSpeak,write:tWrite}[S.task])(m,pool); }
+
+/* ---- OPETTELE (flashcards, no stars) ---- */
+function tOpettele(m,pool){ let idx=0;
+  function draw(){ const it=pool[idx]; const last=idx+1>=pool.length;
+    m.innerHTML='<div class="fade" style="display:flex;flex-direction:column;align-items:center;gap:18px;width:100%">'+
+      mascot("Kertaa sanat rauhassa – ei tähtiä!",true)+
+      '<p class="fred" style="color:#94A3B8;font-weight:700">'+(idx+1)+' / '+pool.length+'</p>'+
+      '<div class="pop" style="background:#fff;border:4px solid '+S.topic.theme.border+';border-radius:24px;padding:36px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:360px;width:100%">'+
+        imgHTML(it,S.topic.kind,"96px")+
+        '<button id="say" class="fred" style="border:0;background:none;cursor:pointer;font-weight:700;font-size:34px;color:'+S.topic.theme.accent+'">🔊 '+esc(it.en)+'</button>'+
+        '<span style="color:#94A3B8;font-weight:700;font-size:20px">'+esc(it.fi)+'</span></div>'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">'+
+        '<button id="prev" class="btn fred" '+(idx===0?"disabled":"")+' style="padding:16px 20px;font-weight:700;font-size:18px;color:#475569;border-color:#CBD5E1">← Edellinen</button>'+
+        nextArrow("next",last?"Valmis":"Seuraava")+'</div></div>';
+    document.getElementById("say").onclick=()=>speak(it.en);
+    document.getElementById("prev").onclick=()=>{ if(idx>0){idx--;draw();} };
+    document.getElementById("next").onclick=()=>{ if(last)finishRound(); else {idx++;draw();} };
+    speak(it.en);
+  } draw();
+}
+
+/* ---- RECOGNIZE ---- */
+function tRecognize(m,pool){ const qs=shuffle(pool).slice(0,Math.min(10,pool.length)).map(t=>({t,opts:shuffle([t,...shuffle(pool.filter(x=>x.en!==t.en)).slice(0,3)])})); let idx=0,done=false;
+  function draw(){ const q=qs[idx]; done=false;
+    m.innerHTML='<div class="fade" style="display:flex;flex-direction:column;align-items:center;gap:20px;width:100%">'+
+      mascot("Kuuntele sana ja napauta oikeaa kuvaa!",true)+
+      '<button id="listen" class="btn fred bounce" style="display:flex;align-items:center;gap:12px;padding:18px 30px;font-weight:700;font-size:24px;color:#fff;background:'+S.topic.theme.accent+';border-color:#0003">🔊 Kuuntele</button>'+
+      '<p class="fred" style="color:#94A3B8;font-weight:700">'+(idx+1)+' / '+qs.length+'</p>'+
+      '<div class="grid" id="opts" style="grid-template-columns:1fr 1fr;max-width:520px">'+
+        q.opts.map((o,i)=>'<button class="btn opt" data-i="'+i+'" style="height:140px;display:flex;align-items:center;justify-content:center;border-color:'+S.topic.theme.border+'">'+imgHTML(o,S.topic.kind,"64px")+'</button>').join("")+
+      '</div></div>';
+    document.getElementById("listen").onclick=()=>speak(q.t.en);
+    m.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ if(done)return; const o=q.opts[+b.dataset.i];
+      if(o.en===q.t.en){ done=true; b.style.background="#DCFCE7"; b.style.borderColor="#15803D"; b.classList.add("pop"); playCorrect(); playStar(); onStar(); showRecOverlay(q.t); }
+      else { b.classList.add("shake"); playTry(); setTimeout(()=>b.classList.remove("shake"),450); } });
+    setTimeout(()=>speak(q.t.en),350);
+  }
+  function showRecOverlay(t){ const ov=document.createElement("div"); ov.className="overlay";
+    ov.innerHTML='<div class="pop" style="background:#fff;border:4px solid #4ADE80;border-radius:24px;padding:36px 48px;display:flex;flex-direction:column;align-items:center;gap:16px">'+
+      imgHTML(t,S.topic.kind,"120px")+'<span class="fred" style="font-weight:700;font-size:52px;color:#16A34A">'+esc(t.en)+'</span>'+
+      '<span class="fred" style="font-weight:700;font-size:22px;color:#F59E0B">Hienoa! ⭐</span>'+nextArrow("ovnext",idx+1>=qs.length?"Valmis":"Seuraava")+'</div>';
+    function adv(){ ov.remove(); if(idx+1>=qs.length)finishRound(); else {idx++;draw();} }
+    ov.onclick=adv; ov.querySelector("#ovnext").onclick=(e)=>{e.stopPropagation();adv();};
+    document.body.appendChild(ov);
+  } draw();
+}
+
+/* ---- MATCH (tap + pointer drag) ---- */
+function tMatch(m,pool){ const BATCH=4; let all=shuffle(pool),batches=[]; for(let i=0;i<all.length;i+=BATCH)batches.push(all.slice(i,i+BATCH));
+  if(batches.length>1&&batches[batches.length-1].length<2){ const t=batches.pop(); batches[batches.length-1]=batches[batches.length-1].concat(t); }
+  let bi=0,matched={},selected=null,words=[],images=[],drag=null; let showHint=localStorage.getItem(HKEY)!=="1";
+  function dismissHint(){ showHint=false; localStorage.setItem(HKEY,"1"); const h=document.getElementById("mhint"); if(h)h.remove(); }
+  function draw(){ const cur=batches[bi]; matched={}; selected=null; words=shuffle(cur); images=shuffle(cur);
+    m.innerHTML='<div class="fade" style="display:flex;flex-direction:column;align-items:center;gap:20px;width:100%">'+
+      mascot("Raahaa sana kuvan päälle — tai napauta sana ja sitten kuva!",true)+
+      '<p class="fred" style="color:#94A3B8;font-weight:700">Osa '+(bi+1)+' / '+batches.length+'</p>'+
+      '<div id="mgrid" style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:640px;width:100%">'+
+        (showHint?'<div id="mhint" style="pointer-events:none;position:absolute;left:0;right:0;top:-12px;display:flex;justify-content:center;z-index:30"><div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);border:4px solid #FCD34D;border-radius:999px;padding:8px 16px"><span class="draghint" style="font-size:28px">👉</span><span class="fred" style="font-weight:700;color:#475569">Raahaa sana kuvaan!</span></div></div>':'')+
+        '<div id="mwords" style="display:flex;flex-direction:column;gap:12px"></div>'+
+        '<div id="mimgs" style="display:flex;flex-direction:column;gap:12px"></div>'+
+      '</div></div>';
+    drawWords(); drawImages();
+  }
+  function drawWords(){ const c=document.getElementById("mwords"); c.innerHTML=words.map(w=>'<button class="btn mword" data-en="'+esc(w.en)+'" '+(matched[w.en]?"disabled":"")+' style="padding:16px;font-weight:700;font-size:22px;touch-action:none;border-color:'+S.topic.theme.border+';background:'+(selected===w.en?S.topic.theme.accent:"#fff")+';color:'+(selected===w.en?"#fff":"#1E293B")+';visibility:'+(matched[w.en]?"hidden":"visible")+'">'+esc(w.en)+'</button>').join("");
+    c.querySelectorAll(".mword").forEach(b=>{ const w=words.find(x=>x.en===b.dataset.en);
+      b.onpointerdown=(e)=>{ if(matched[w.en])return; if(showHint)dismissHint(); try{b.setPointerCapture(e.pointerId);}catch(_){}
+        drag={w,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:false,el:b}; };
+      b.onpointermove=(e)=>{ if(!drag||drag.w.en!==w.en)return; if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>6)drag.moved=true; drag.x=e.clientX; drag.y=e.clientY; if(drag.moved){ b.style.visibility="hidden"; moveFloat(); highlightDrop(e.clientX,e.clientY);} };
+      b.onpointerup=(e)=>{ if(!drag){ return; } const d=drag; drag=null; killFloat(); clearHi();
+        if(d.moved){ b.style.visibility=matched[w.en]?"hidden":"visible"; const el=document.elementFromPoint(e.clientX,e.clientY); const drop=el&&el.closest("[data-drop]"); if(drop)tryMatch(w.en,drop.getAttribute("data-drop")); }
+        else { selected=selected===w.en?null:w.en; drawWords(); } };
+    });
+  }
+  function drawImages(){ const c=document.getElementById("mimgs"); c.innerHTML=images.map(im=>'<div class="btn mimg" data-drop="'+esc(im.en)+'" style="height:88px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-color:'+(matched[im.en]?"#15803D":S.topic.theme.border)+';background:'+(matched[im.en]?"#DCFCE7":"#fff")+'">'+(matched[im.en]?'<span style="font-size:34px">✅</span>':imgHTML(im,S.topic.kind,"46px"))+'</div>').join("");
+    c.querySelectorAll(".mimg").forEach(d=>d.onclick=()=>{ const en=d.getAttribute("data-drop"); if(matched[en])return; if(selected)tryMatch(selected,en); });
+  }
+  let floatEl=null;
+  function moveFloat(){ if(!floatEl){ floatEl=document.createElement("div"); floatEl.className="fred"; floatEl.style.cssText="position:fixed;z-index:9999;pointer-events:none;font-weight:700;font-size:22px;padding:16px 20px;border-radius:16px;border:4px solid "+S.topic.theme.border+";background:"+S.topic.theme.accent+";color:#fff;box-shadow:0 12px 24px rgba(0,0,0,.25)"; floatEl.textContent=drag.w.en; document.body.appendChild(floatEl);} floatEl.style.left=drag.x+"px"; floatEl.style.top=drag.y+"px"; floatEl.style.transform="translate(-50%,-50%) rotate(-3deg) scale(1.06)"; }
+  function killFloat(){ if(floatEl){ floatEl.remove(); floatEl=null; } }
+  function highlightDrop(x,y){ clearHi(); const el=document.elementFromPoint(x,y); const drop=el&&el.closest("[data-drop]"); if(drop&&!matched[drop.getAttribute("data-drop")]){ drop.style.transform="scale(1.05)"; drop.style.borderColor=S.topic.theme.accent; drop.style.background=S.topic.theme.bg; } }
+  function clearHi(){ document.querySelectorAll(".mimg").forEach(d=>{ const en=d.getAttribute("data-drop"); if(!matched[en]){ d.style.transform="none"; d.style.borderColor=S.topic.theme.border; d.style.background="#fff"; } }); }
+  function tryMatch(wordEn,imgEn){ if(matched[imgEn])return;
+    if(wordEn===imgEn){ matched[imgEn]=true; selected=null; speak(imgEn); playCorrect(); playStar(); onStar(); drawWords(); drawImages();
+      if(batches[bi].every(it=>matched[it.en])){ setTimeout(()=>{ if(bi+1>=batches.length)finishRound(); else {bi++;draw();} },1000); } }
+    else { const d=document.querySelector('[data-drop="'+CSS.escape(imgEn)+'"]'); if(d){ d.classList.add("shake"); playTry(); setTimeout(()=>d.classList.remove("shake"),450);} }
+  } draw();
+}
+
+/* ---- SPEAK (record + playback, no judgment) ---- */
+function tSpeak(m,pool){ const words=shuffle(pool).slice(0,Math.min(10,pool.length)); let idx=0,rec=null,chunks=[],url=null,recording=false,starred={};
+  function draw(){ const it=words[idx];
+    m.innerHTML='<div class="fade" style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%">'+
+      mascot("Katso kuvaa, sano sana ja kuuntele oma äänesi!",true)+
+      '<p class="fred" style="color:#94A3B8;font-weight:700">'+(idx+1)+' / '+words.length+'</p>'+
+      '<div class="pop" style="background:#fff;border:4px solid '+S.topic.theme.border+';border-radius:24px;padding:32px;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:360px;width:100%">'+
+        imgHTML(it,S.topic.kind,"96px")+'<button id="say" class="fred" style="border:0;background:none;cursor:pointer;font-weight:700;font-size:32px;color:'+S.topic.theme.accent+'">🔊 '+esc(it.en)+'</button><span style="color:#94A3B8;font-weight:700;font-size:18px">'+esc(it.fi)+'</span></div>'+
+      '<p id="micerr" style="color:#D97706;font-weight:700;text-align:center;max-width:360px;display:none">Mikrofonia ei löytynyt — ei haittaa! Voit silti sanoa sanan ääneen ja jatkaa. 😊</p>'+
+      '<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center" id="recctrl"></div>'+
+      nextArrow("next",idx+1>=words.length?"Valmis":"Seuraava")+'</div>';
+    document.getElementById("say").onclick=()=>speak(it.en);
+    document.getElementById("next").onclick=()=>{ if(url){URL.revokeObjectURL(url);url=null;} recording=false; if(idx+1>=words.length)finishRound(); else {idx++;draw();} };
+    drawCtrl(it); setTimeout(()=>speak(it.en),350);
+  }
+  function drawCtrl(it){ const c=document.getElementById("recctrl");
+    c.innerHTML=(!recording?'<button id="rec" class="btn fred" style="display:flex;align-items:center;gap:8px;padding:16px 28px;font-weight:700;font-size:20px;color:#fff;background:#FB7185;border-color:#BE123C">🎙️ Nauhoita</button>':'<button id="stop" class="btn fred wiggle" style="display:flex;align-items:center;gap:8px;padding:16px 28px;font-weight:700;font-size:20px;color:#fff;background:#DC2626;border-color:#7F1D1D">⏹️ Lopeta</button>')+
+      (url?'<button id="play" class="btn fred pop" style="display:flex;align-items:center;gap:8px;padding:16px 28px;font-weight:700;font-size:20px;color:#fff;background:#4ADE80;border-color:#15803D">▶️ Kuuntele</button>':'');
+    const recb=document.getElementById("rec"); if(recb)recb.onclick=async()=>{ try{ const st=await navigator.mediaDevices.getUserMedia({audio:true}); rec=new MediaRecorder(st); chunks=[]; rec.ondataavailable=e=>e.data.size&&chunks.push(e.data); rec.onstop=()=>{ url=URL.createObjectURL(new Blob(chunks,{type:"audio/webm"})); st.getTracks().forEach(t=>t.stop()); drawCtrl(it); }; rec.start(); recording=true; drawCtrl(it);}catch(e){ document.getElementById("micerr").style.display="block"; } };
+    const stopb=document.getElementById("stop"); if(stopb)stopb.onclick=()=>{ if(rec&&recording){ rec.stop(); recording=false; if(!starred[it.en]){starred[it.en]=true;onStar();} } };
+    const playb=document.getElementById("play"); if(playb)playb.onclick=()=>{ if(url)new Audio(url).play(); };
+  } draw();
+}
+
+/* ---- WRITE (live green letters, two-step hint) ---- */
+function tWrite(m,pool){ const words=shuffle(pool).slice(0,Math.min(10,pool.length)); let idx=0,done=false,hintCount=0,starred=false;
+  function draw(){ const it=words[idx]; const target=it.en; done=false; hintCount=0; starred=false;
+    m.innerHTML='<div class="fade" style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%">'+
+      mascot("Kirjoita sana kuvan mukaan — oikeat kirjaimet muuttuvat vihreiksi!",true)+
+      '<p class="fred" style="color:#94A3B8;font-weight:700">'+(idx+1)+' / '+words.length+'</p>'+
+      '<div class="pop" style="background:#fff;border:4px solid '+S.topic.theme.border+';border-radius:24px;padding:32px;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:360px;width:100%">'+
+        imgHTML(it,S.topic.kind,"96px")+'<span style="color:#94A3B8;font-weight:700;font-size:18px;margin-top:4px">'+esc(it.fi)+'</span>'+
+        '<span id="hint" class="fred" style="font-weight:700;font-size:24px;color:#F59E0B;letter-spacing:4px;display:none">'+esc(target)+'</span></div>'+
+      '<div id="tiles" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:520px"></div>'+
+      '<input id="win" class="txtin" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Kirjoita tähän…" style="border-color:'+S.topic.theme.border+'" />'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center" id="wctrl"><button id="vihje" class="btn fred" style="display:flex;align-items:center;gap:8px;padding:12px 20px;font-weight:700;font-size:18px;background:#FACC15;border-color:#D97706;color:#78350F">💡 Vihje</button></div>'+
+      '<div id="wok" class="fred" style="font-weight:700;font-size:24px;color:#16A34A;display:none">Oikein! ⭐</div></div>';
+    const inp=document.getElementById("win"); const tiles=document.getElementById("tiles");
+    function drawTiles(typed){ let ok=true; tiles.innerHTML=target.split("").map((ch,i)=>{ if(ch===" ")return '<span style="width:12px"></span>'; const t=typed[i]; const match=t&&t.toLowerCase()===ch.toLowerCase()&&ok; if(t&&t.toLowerCase()!==ch.toLowerCase())ok=false; return '<span class="tile" style="'+(match?"border-color:#15803D;background:#DCFCE7;color:#15803D":"")+'">'+(t?esc(t):"")+'</span>'; }).join(""); }
+    drawTiles("");
+    inp.oninput=()=>{ if(done)return; const v=inp.value; drawTiles(v); if(v.toLowerCase()===target.toLowerCase()){ done=true; inp.style.borderColor="#15803D"; inp.style.color="#15803D"; speak(target); playCorrect(); playStar(); if(!starred){starred=true;onStar();} document.getElementById("wok").style.display="block"; const c=document.getElementById("wctrl"); if(!document.getElementById("wnext")) c.insertAdjacentHTML("beforeend",nextArrow("wnext",idx+1>=words.length?"Valmis":"Seuraava")); document.getElementById("wnext").onclick=()=>{ if(idx+1>=words.length)finishRound(); else {idx++;draw();} }; } };
+    document.getElementById("vihje").onclick=()=>{ speak(target); hintCount++; if(hintCount>=2){ const h=document.getElementById("hint"); h.style.display="block"; setTimeout(()=>h.style.display="none",2200); } };
+    setTimeout(()=>inp.focus(),250);
+  } draw();
+}
+
+/* ============================ STICKERS ============================ */
+function renderStickers(m){ const unlocked=prog.unlocked||[]; const total=STAR_STICKERS.length+MASTERY_STICKERS.length;
+  function cell(s,ok,hint){ return '<button class="scell" data-id="'+s.id+'" style="cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px;border-radius:16px;border:4px solid '+(ok?"#FBBF24":"#E2E8F0")+';background:'+(ok?"#fff":"#F8FAFC")+';aspect-ratio:1">'+
+    '<span style="font-size:44px;filter:'+(ok?"none":"grayscale(1)")+';opacity:'+(ok?1:.35)+'">'+s.emoji+'</span>'+
+    '<span class="fred" style="font-weight:700;font-size:13px;text-align:center;color:'+(ok?"#334155":"#94A3B8")+'">'+s.name+'</span>'+
+    (ok?"":'<span style="font-size:11px;font-weight:700;color:#94A3B8">🔒 '+hint+'</span>')+'</button>'; }
+  m.innerHTML='<div class="fade" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:24px">'+
+    '<div style="text-align:center"><h2 class="fred" style="font-weight:700;font-size:36px;color:#F59E0B;margin:0">Tarrat 🏅</h2><p style="color:#64748B;font-weight:700;font-size:18px;margin:4px 0">Kerätty '+unlocked.length+' / '+total+' · sinulla on '+prog.stars+' tähteä ⭐</p></div>'+
+    '<div style="width:100%;max-width:760px"><h3 class="fred" style="font-weight:700;font-size:20px;color:#64748B;margin:0 0 12px">Ansaitse tähdillä ⭐</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px">'+STAR_STICKERS.map(s=>cell(s,unlocked.includes(s.id),s.cost+" ⭐")).join("")+'</div></div>'+
+    '<div style="width:100%;max-width:760px"><h3 class="fred" style="font-weight:700;font-size:20px;color:#64748B;margin:0 0 12px">Aihemestarit 🎯</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px">'+MASTERY_STICKERS.map(s=>cell(s,unlocked.includes(s.id),topicRounds(s.topic)+"/"+MASTERY_TIMES+" "+s.topicFi)).join("")+'</div></div></div>';
+  m.querySelectorAll(".scell").forEach(b=>b.onclick=()=>showStickerDetail(b.dataset.id));
+}
+function showStickerDetail(id){ const s=stickerById(id); const ok=(prog.unlocked||[]).includes(id);
+  const hint = s.cost?(s.cost+" ⭐"):(topicRounds(s.topic)+"/"+MASTERY_TIMES+" "+s.topicFi);
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML='<div class="pop" style="background:#fff;border:4px solid '+(ok?"#FBBF24":"#CBD5E1")+';border-radius:24px;padding:32px;max-width:340px;width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">'+
+    '<button id="sx" class="btn" style="align-self:flex-end;padding:8px;border-color:#CBD5E1">✕</button>'+
+    '<span class="bounce" style="font-size:120px;filter:'+(ok?"none":"grayscale(1)")+';opacity:'+(ok?1:.4)+'">'+s.emoji+'</span>'+
+    '<span class="fred" style="font-weight:700;font-size:30px;color:#334155">'+s.name+'</span>'+
+    (ok?'<span class="fred" style="font-weight:700;font-size:20px;color:#16A34A">Ansaittu! 🎉</span>':'<span class="fred" style="font-weight:700;font-size:18px;color:#94A3B8">🔒 '+hint+'</span>')+'</div>';
+  ov.onclick=()=>ov.remove(); ov.querySelector("#sx").onclick=(e)=>{e.stopPropagation();ov.remove();};
+  ov.querySelector("div").onclick=(e)=>e.stopPropagation();
+  document.body.appendChild(ov);
+}
+function showCelebration(){ if(!celebrateQueue.length||document.getElementById("celeb"))return; const s=stickerById(celebrateQueue[0]);
+  const ov=document.createElement("div"); ov.className="overlay"; ov.id="celeb";
+  ov.innerHTML='<div class="pop" style="background:#fff;border:4px solid #FBBF24;border-radius:24px;padding:32px;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:300px;text-align:center">'+
+    '<span class="fred" style="font-weight:700;font-size:18px;color:#F59E0B;letter-spacing:2px">UUSI TARRA!</span>'+
+    '<span class="bounce" style="font-size:100px">'+s.emoji+'</span>'+
+    '<span class="fred" style="font-weight:700;font-size:28px;color:#334155">'+s.name+'</span>'+
+    '<button id="cok" class="btn fred" style="padding:12px 30px;font-weight:700;font-size:20px;color:#fff;background:#4ADE80;border-color:#15803D">Jee! 🎉</button></div>';
+  function close(){ ov.remove(); celebrateQueue.shift(); if(celebrateQueue.length)setTimeout(showCelebration,150); }
+  ov.onclick=close; ov.querySelector("#cok").onclick=(e)=>{e.stopPropagation();close();};
+  document.body.appendChild(ov);
+}
+
+/* ============================ SETTINGS ============================ */
+function openSettings(){ const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML='<div style="background:#fff;border:4px solid #7DD3FC;border-radius:24px;padding:28px;max-width:420px;width:100%" class="pop">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><h2 class="fred" style="font-weight:700;font-size:24px;margin:0;color:#334155">Ääniasetukset ⚙️</h2><button id="setx" class="btn" style="padding:8px;border-color:#CBD5E1">✕</button></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;border:2px solid #BAE6FD;background:#F0F9FF;border-radius:16px;padding:12px"><span style="font-size:26px">🎙️</span><p class="fred" style="font-weight:700;color:#64748B;font-size:14px;margin:0">Sanat luetaan selaimen englanninkielisellä äänellä.</p></div>'+
+    '<p class="fred" style="font-weight:700;color:#64748B;margin:0 0 8px">Puheen nopeus</p>'+
+    '<div style="display:flex;align-items:center;gap:12px"><span style="font-size:26px">🐢</span><input id="rate" type="range" min="0.5" max="1.3" step="0.05" value="'+voice.rate+'" style="flex:1"><span style="font-size:26px">🐇</span></div>'+
+    '<p id="rateval" class="fred" style="text-align:center;font-weight:700;color:#94A3B8;margin:6px 0 18px">'+(+voice.rate).toFixed(2)+'×</p>'+
+    '<button id="testv" class="btn fred" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;font-weight:700;font-size:20px;color:#fff;background:#4ADE80;border-color:#15803D">🔊 Kokeile ääntä</button></div>';
+  ov.onclick=()=>ov.remove(); ov.querySelector("div").onclick=(e)=>e.stopPropagation();
+  ov.querySelector("#setx").onclick=(e)=>{e.stopPropagation();ov.remove();};
+  const r=ov.querySelector("#rate"); r.oninput=()=>{ voice.rate=parseFloat(r.value); localStorage.setItem(VKEY,JSON.stringify(voice)); ov.querySelector("#rateval").textContent=voice.rate.toFixed(2)+"×"; };
+  ov.querySelector("#testv").onclick=()=>speak("Hello, let's learn English!");
+  document.body.appendChild(ov);
+}
+
+/* ============================ BOOT ============================ */
+render();
+</script>
+</body>
+</html>
