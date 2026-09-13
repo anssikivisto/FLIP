@@ -97,7 +97,7 @@ function earnedStickerIds(){ const ids=[]; STAR_STICKERS.forEach(s=>{ if((prog.s
 /* ============================ STORAGE ============================ */
 const PKEY="et_std_progress", VKEY="et_std_voice", HKEY="et_std_matchhint", MKEY="et_std_muted";
 let prog = load(PKEY,{stars:0,streak:0,lastPlayDay:null,completed:{},unlocked:[]});
-let voice = load(VKEY,{rate:0.9,accent:"uk"}); // default accent: 'uk'
+let voice = load(VKEY,{rate:0.9,accent:"uk"});
 function load(k,def){ try{ return {...def,...JSON.parse(localStorage.getItem(k)||"{}")}; }catch(e){ return {...def}; } }
 function saveProg(){ localStorage.setItem(PKEY,JSON.stringify(prog)); }
 function saveVoice(){ localStorage.setItem(VKEY,JSON.stringify(voice)); }
@@ -157,7 +157,8 @@ function getPool(topic,level){ if(topic.levels){ const l=topic.levels.find(x=>x.
 
 /* ============================ STATE + ROUTER ============================ */
 const S={screen:"menu",topic:null,level:null,task:null,roundStars:0};
-const root=document.getElementById("root");
+let root;
+
 function go(screen){ S.screen=screen; render(); }
 function pickTopic(t){ S.topic=t; S.level=null; go(t.levels?"levels":"tasks"); }
 function pickLevel(id){ S.level=id; go("tasks"); }
@@ -167,6 +168,8 @@ function finishRound(){ if(S.task!=="opettele") completeRound(S.topic.id,S.task)
 function handleBack(){ if(S.screen==="game"||S.screen==="complete") go("tasks"); else if(S.screen==="tasks") go(S.topic&&S.topic.levels?"levels":"menu"); else if(S.screen==="levels") go("menu"); else if(S.screen==="stickers") go("menu"); }
 
 function render(){
+  root = document.getElementById("root");
+  if(!root) return;
   const canBack=S.screen!=="menu";
   const accent=S.screen==="stickers"?"#D97706":(S.topic?S.topic.theme.accent:"#0369A1");
   let title="FLIP – English Trainer";
@@ -220,8 +223,8 @@ function openSettings(){
   '</div>';
   document.body.appendChild(ov);
   
-  document.getElementById("acc-uk").onclick=()=>{ voice.accent="uk"; saveVoice(); openSettings(); ov.remove(); };
-  document.getElementById("acc-us").onclick=()=>{ voice.accent="us"; saveVoice(); openSettings(); ov.remove(); };
+  document.getElementById("acc-uk").onclick=()=>{ voice.accent="uk"; saveVoice(); ov.remove(); openSettings(); };
+  document.getElementById("acc-us").onclick=()=>{ voice.accent="us"; saveVoice(); ov.remove(); openSettings(); };
   document.getElementById("ratesld").onchange=(e)=>{ voice.rate=parseFloat(e.target.value); saveVoice(); };
   document.getElementById("closeset").onclick=()=>{ ov.remove(); };
 }
@@ -547,9 +550,9 @@ function renderComplete(m){
 }
 
 /* ============================ INIT ============================ */
-window.onload=()=>{
+document.addEventListener("DOMContentLoaded", () => {
   render();
-};
+});
 </script>
 </body>
 </html>
