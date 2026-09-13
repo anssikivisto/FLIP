@@ -26,6 +26,7 @@ export function RecognizeTask({ topic, pool, onStar, onFinish }) {
   const playWord = useCallback(() => {
     if (q) speak(q.target.en);
   }, [q]);
+  // note: `speak` is a stable module import and intentionally omitted from deps.
 
   useEffect(() => {
     const t = setTimeout(playWord, 400);

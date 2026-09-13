@@ -93,7 +93,9 @@ export function MatchTask({ topic, pool, onStar, onFinish }) {
     if (showHint) dismissHint();
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch (err) {}
+    } catch (err) {
+      // Pointer capture is unsupported on some browsers; drag still works via tap fallback.
+    }
     startRef.current = { x: e.clientX, y: e.clientY };
     setDrag({ word: w, x: e.clientX, y: e.clientY, moved: false });
   };

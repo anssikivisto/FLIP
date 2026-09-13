@@ -90,10 +90,10 @@ export function WriteTask({ topic, pool, onStar, onFinish }) {
           const isSpace = ch === " ";
           const matches = t && t.toLowerCase() === ch.toLowerCase() && prefixOk;
           if (t && t.toLowerCase() !== ch.toLowerCase()) prefixOk = false;
-          if (isSpace) return <span key={i} className="w-3" />;
+          if (isSpace) return <span key={`sp-${idx}-${i}`} className="w-3" />;
           return (
             <span
-              key={i}
+              key={`${idx}-${i}`}
               className="w-9 h-11 sm:w-10 sm:h-12 flex items-center justify-center rounded-lg border-2 font-fredoka font-bold text-2xl uppercase transition-colors"
               style={{
                 borderColor: matches ? "#15803D" : "#CBD5E1",
