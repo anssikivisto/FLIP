@@ -4,14 +4,7 @@ import { X, Volume2 } from "lucide-react";
 
 export function SettingsModal({ onClose }) {
   const initial = getVoiceSettings();
-  const [accent, setAccent] = useState(initial.accent);
   const [rate, setRate] = useState(initial.rate);
-
-  const chooseAccent = (a) => {
-    setAccent(a);
-    setVoiceSettings({ accent: a });
-    speak("Hello");
-  };
 
   const changeRate = (r) => {
     setRate(r);
@@ -19,22 +12,6 @@ export function SettingsModal({ onClose }) {
   };
 
   const testVoice = () => speak("Hello, let's learn English!");
-
-  const AccentButton = ({ id, flag, label }) => (
-    <button
-      data-testid={`accent-${id}`}
-      onClick={() => chooseAccent(id)}
-      className="ket-btn flex-1 flex flex-col items-center gap-1 py-4 font-fredoka font-bold text-lg"
-      style={{
-        backgroundColor: accent === id ? "#38BDF8" : "#fff",
-        color: accent === id ? "#fff" : "#334155",
-        borderColor: accent === id ? "#0284C7" : "#CBD5E1",
-      }}
-    >
-      <span className="text-3xl leading-none">{flag}</span>
-      {label}
-    </button>
-  );
 
   return (
     <div
@@ -59,10 +36,11 @@ export function SettingsModal({ onClose }) {
           </button>
         </div>
 
-        <p className="font-fredoka font-bold text-slate-500 mb-2">Englannin aksentti</p>
-        <div className="flex gap-3 mb-6">
-          <AccentButton id="gb" flag="🇬🇧" label="Britti" />
-          <AccentButton id="us" flag="🇺🇸" label="Amerikan" />
+        <div className="flex items-center gap-2 mb-5 rounded-2xl bg-sky-50 border-2 border-sky-200 px-4 py-3">
+          <span className="text-2xl">🎙️</span>
+          <p className="font-fredoka font-bold text-slate-500 text-sm">
+            Sanat luetaan laadukkaalla tekoälyäänellä (Nova).
+          </p>
         </div>
 
         <p className="font-fredoka font-bold text-slate-500 mb-2">Puheen nopeus</p>

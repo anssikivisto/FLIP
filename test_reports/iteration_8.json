@@ -1,0 +1,32 @@
+{
+  "summary": "Iteration 8: Verified new OpenAI TTS backend endpoint /api/tts/{slug} and full frontend regression after accent-removal + audio-cache refactor. 27/27 pytest backend tests pass (16 TTS slugs across all topics + 11 content endpoints). All 5 tasks + settings modal + header verified via Playwright with 0 console errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_results": {
+    "tts_known_slugs_200": "PASS — dog, ice-cream, one-hundred, twenty-one, high-heels, red, seven, giraffe, pizza, watermelon, purple, tongue, sunglasses, volcano, eleven, ninety — all return 200 audio/mpeg with Cache-Control: public, max-age=31536000 and non-empty body",
+    "tts_unknown_slug_404": "PASS — /api/tts/notaword -> 404",
+    "content_api": "PASS — 7 topics with expected counts (animals 25, colors 10, numbers 10/10/80, foods 25, body 25, clothes 25, nature 25); no mongo _id leaked",
+    "settings_modal_accent_removed": "PASS — accent-gb / accent-us do NOT exist; rate-slider + test-voice-button present; Nova info note visible",
+    "settings_rate_persist": "PASS — moving rate-slider persists {\"rate\":0.8} to localStorage 'ket_voice_v1'",
+    "settings_close_behaviors": "PASS — inside click (on rate-slider) does not close; settings-close-button closes; backdrop click closes",
+    "recognize_audio_flow": "PASS — audio-listen-button click triggers GET /api/tts/<slug>; captured 6 TTS responses (horse/monkey/owl) all HTTP 200; overlay dismiss + next-question flow works without crash",
+    "task_regression": "PASS — opettele/recognize/match/speak/write all render on fresh navigation across animals/colors/numbers/foods/body/clothes/nature",
+    "header_regression": "PASS — open-settings-button + star-rewards-counter present, mute-toggle absent, 7 topics render",
+    "console_errors": "0 errors, 0 pageerrors across all screens"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_tts_api.py",
+    "/app/backend/tests/test_content_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Minor: /api/tts/{slug} swallows storage errors as 404 (currently masked as 'Audio unavailable'). Fine for graceful fallback, but consider logging the exception so silent object-storage failures don't go unnoticed in production."
+  ],
+  "updated_files": ["/app/backend/tests/test_tts_api.py"],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "TTS endpoint is /api/tts/{slug} (not /api/tts/vocab-play-fi — that was just the preview subdomain in the request). Slug rule: lowercase, non-[a-z0-9]+ -> '-', trimmed. 16 slugs verified 200 with audio/mpeg + Cache-Control; unknown slug -> 404 (frontend falls back to browser SpeechSynthesis). Playwright note: audio-listen-button uses ket-bounce-slow animation; use click(force=True) to avoid 'element not stable' timeouts. Settings modal outer div is fixed inset-0 backdrop; clicking anywhere OUTSIDE inner white box closes it — for 'inside click doesn't close' test, click on rate-slider or test-voice-button."
+}

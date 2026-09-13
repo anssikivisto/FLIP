@@ -1,12 +1,14 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import asyncio
 import logging
 from pathlib import Path
 
 from content_data import build_topics
+from audio_storage import init_storage, get_object
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -70,6 +72,25 @@ async def get_topic(topic_id: str):
     return topic
 
 
+@api_router.get("/tts/{slug}")
+async def get_tts(slug: str):
+    """Serve a cached, pre-generated MP3 for an English word (falls back to
+    404 so the frontend uses the browser voice for any not-yet-generated word)."""
+    doc = await db.audio_cache.find_one({"slug": slug})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Audio not generated")
+    try:
+        data, _ = await asyncio.to_thread(get_object, doc["path"])
+    except Exception as e:
+        logger.warning("TTS object fetch failed for %s: %s", slug, e)
+        raise HTTPException(status_code=404, detail="Audio unavailable")
+    return Response(
+        content=data,
+        media_type="audio/mpeg",
+        headers={"Cache-Control": "public, max-age=31536000"},
+    )
+
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -84,6 +105,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_seed():
     await seed_content()
+    try:
+        await asyncio.to_thread(init_storage)
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.error("Storage init failed: %s", e)
 
 
 @app.on_event("shutdown")

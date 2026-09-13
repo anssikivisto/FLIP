@@ -1,8 +1,10 @@
-// Speech synthesis (English words) + Web Audio sound effects + mute handling.
+// Audio: plays pre-generated OpenAI TTS (voice 'nova') served by the backend,
+// with the browser SpeechSynthesis as a fallback. Plus Web Audio sound effects.
 
 const MUTE_KEY = "ket_muted";
 const VOICE_KEY = "ket_voice_v1";
-const DEFAULT_VOICE = { accent: "gb", rate: 0.85 };
+const DEFAULT_VOICE = { rate: 0.9 };
+const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
 export function isMuted() {
   return localStorage.getItem(MUTE_KEY) === "1";
@@ -26,6 +28,18 @@ export function setVoiceSettings(patch) {
   return merged;
 }
 
+function clampRate(r) {
+  return Math.min(1.5, Math.max(0.5, r || 0.9));
+}
+
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function ttsUrl(text) {
+  return `${BACKEND}/api/tts/${slugify(text)}`;
+}
+
 let _voices = [];
 function loadVoices() {
   if (!("speechSynthesis" in window)) return;
@@ -36,34 +50,71 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
   window.speechSynthesis.onvoiceschanged = loadVoices;
 }
 
-function pickEnglishVoice(accent) {
+function pickEnglishVoice() {
   if (!_voices.length) loadVoices();
-  const gb = _voices.find((v) => /en[-_]GB/i.test(v.lang));
-  const us = _voices.find((v) => /en[-_]US/i.test(v.lang));
-  const anyEn = _voices.find((v) => /^en/i.test(v.lang));
-  if (accent === "us") return us || gb || anyEn || null;
-  return gb || us || anyEn || null;
+  return (
+    _voices.find((v) => /en[-_]GB/i.test(v.lang)) ||
+    _voices.find((v) => /en[-_]US/i.test(v.lang)) ||
+    _voices.find((v) => /^en/i.test(v.lang)) ||
+    null
+  );
 }
 
-// Read an English word aloud. Fallback-safe across browsers.
+let _audio = null;
+
+function stopCurrent() {
+  try {
+    if (_audio) {
+      _audio.pause();
+      _audio = null;
+    }
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  } catch (e) {
+    // ignore
+  }
+}
+
+// Read an English word aloud: cached AI voice first, browser voice as fallback.
 export function speak(text, { onEnd } = {}) {
-  if (isMuted() || !("speechSynthesis" in window) || !text) {
-    if (onEnd) setTimeout(onEnd, 250);
+  if (isMuted() || !text) {
+    if (onEnd) setTimeout(onEnd, 200);
+    return;
+  }
+  stopCurrent();
+  const { rate } = getVoiceSettings();
+  const audio = new Audio(ttsUrl(text));
+  audio.playbackRate = clampRate(rate);
+  _audio = audio;
+  let fellBack = false;
+  const fallback = () => {
+    if (fellBack) return;
+    fellBack = true;
+    speakBrowser(text, { onEnd });
+  };
+  audio.onended = () => onEnd && onEnd();
+  audio.onerror = fallback;
+  const p = audio.play();
+  if (p && p.catch) p.catch(fallback);
+}
+
+function speakBrowser(text, { onEnd } = {}) {
+  if (!("speechSynthesis" in window)) {
+    if (onEnd) setTimeout(onEnd, 200);
     return;
   }
   try {
-    const { accent, rate } = getVoiceSettings();
+    const { rate } = getVoiceSettings();
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const voice = pickEnglishVoice(accent);
+    const voice = pickEnglishVoice();
     if (voice) u.voice = voice;
-    u.lang = accent === "us" ? "en-US" : "en-GB";
-    u.rate = Math.min(1.5, Math.max(0.5, rate || 0.85));
+    u.lang = voice ? voice.lang : "en-US";
+    u.rate = clampRate(rate);
     u.pitch = 1.08;
     if (onEnd) u.onend = onEnd;
     window.speechSynthesis.speak(u);
   } catch (e) {
-    if (onEnd) setTimeout(onEnd, 250);
+    if (onEnd) setTimeout(onEnd, 200);
   }
 }
 
